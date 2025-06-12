@@ -23,7 +23,7 @@ namespace OOProjectBasedLeaning
         private void DragDropPanel_MouseDown(object? sender, MouseEventArgs e)
         {
 
-            OnPanelMouseDown();
+            DoDragDrop(this, DragDropEffects.Move);
 
         }
 
