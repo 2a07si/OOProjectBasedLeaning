@@ -130,6 +130,21 @@ namespace OOProjectBasedLeaning
             return this;
 
         }
+        public void AddForm(Form form,DragAction e)
+        {
+            if(form is Yoyaku)
+            {
+                BackColor = Color.White;
+            }
+            else if (form is HotelForm)
+            {
+                BackColor = Color.Yellow;
+            }
+            else if(form is HomeForm)
+            {
+                BackColor= Color.Pink;
+            }
+        }
 
     }
 

@@ -35,7 +35,8 @@ namespace OOProjectBasedLeaning
             {
                 Text = guest.Name,
                 Location = new Point(120, 6),
-                Width = 160
+                Width = 160,
+                Enabled=false,
             };
 
             Controls.Add(guestNameLabel);
