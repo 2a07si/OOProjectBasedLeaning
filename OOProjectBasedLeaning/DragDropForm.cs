@@ -100,6 +100,11 @@ namespace OOProjectBasedLeaning
 
         }
 
+        private void InitializeComponent()
+        {
+
+        }
+
         protected virtual void OnFormDragDropFileDrop(string[]? fileDropObject, DragEventArgs dragEventArgs)
         {
 

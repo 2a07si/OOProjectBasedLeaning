@@ -11,6 +11,7 @@ namespace OOProjectBasedLeaning
     {
 
         private Guest guest;
+        private TextBox guestNameTextBox = new TextBox();
 
         public GuestPanel(Guest guest)
         {
@@ -31,7 +32,7 @@ namespace OOProjectBasedLeaning
                 Location = new Point(10, 10)
             };
 
-            TextBox guestNameTextBox = new TextBox
+            guestNameTextBox = new TextBox
             {
                 Text = guest.Name,
                 Location = new Point(120, 6),

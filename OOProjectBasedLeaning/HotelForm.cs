@@ -21,6 +21,8 @@ namespace OOProjectBasedLeaning
 
             InitializeComponent();
 
+            new Yoyaku().Enabled = false;
+
         }
 
     }

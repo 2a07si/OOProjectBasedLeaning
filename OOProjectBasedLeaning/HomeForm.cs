@@ -9,6 +9,8 @@ namespace OOProjectBasedLeaning
 
             InitializeComponent();
 
+            new Yoyaku().Show();
+
         }
 
     }
