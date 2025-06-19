@@ -1,50 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
+using System.Windows.Forms;
 
 namespace OOProjectBasedLeaning
 {
-
-    public class GuestPanel : Panel
+    public class GuestPanel : DragDropPanel
     {
-
         private Guest guest;
-        private TextBox guestNameTextBox = new TextBox();
+        private Label guestNameLabel;
 
         public GuestPanel(Guest guest)
         {
-
             this.guest = guest;
-
+            Size = new Size(300, 40);
+            BackColor = Color.LightYellow;
             InitializeComponent();
-
         }
+
+        public Guest GetGuest() => guest;
 
         private void InitializeComponent()
         {
-
-            Label guestNameLabel = new Label
+            guestNameLabel = new Label
             {
-                Text = guest.Name,
+                Text = $"ゲスト名： {guest.Name}",
                 AutoSize = true,
                 Location = new Point(10, 10)
             };
-
-            guestNameTextBox = new TextBox
-            {
-                Text = guest.Name,
-                Location = new Point(120, 6),
-                Width = 160,
-                Enabled=false,
-            };
-
             Controls.Add(guestNameLabel);
-            Controls.Add(guestNameTextBox);
-
         }
 
+        protected override void OnPanelMouseDown()
+        {
+            DoDragDropMove();
+        }
     }
-
 }
