@@ -1,19 +1,16 @@
-using System;
+Ôªøusing System;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace OOProjectBasedLeaning
 {
-    public partial class yoyaku : DragDropForm
+    public partial class HomeForm : DragDropForm
     {
-        public yoyaku()
+        public HomeForm()
         {
-            this.Text = "ó\ñÒä«óù";
-            this.Size = new Size(800, 600);
-
-            new GuestCreatorForm().Show();
-            new HomeForm().Show();
-            new HotelForm().Show();
+            Text = "Home Form";
+            Size = new Size(400, 400);
+            BackColor = Color.White;
         }
 
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
@@ -24,7 +21,9 @@ namespace OOProjectBasedLeaning
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
             if (obj is DragDropPanel panel)
+            {
                 panel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+            }
         }
     }
 }

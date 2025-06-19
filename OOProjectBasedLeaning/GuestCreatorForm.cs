@@ -1,51 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace OOProjectBasedLeaning
 {
-
     public partial class GuestCreatorForm : Form
     {
+        private TextBox nameTextBox;
 
         public GuestCreatorForm()
         {
-
             InitializeComponent();
-
+            nameTextBox = new TextBox()
+            {
+                Location = new Point(10, 20),
+                Size = new Size(200, 31)
+            };
+            Controls.Add(nameTextBox);
         }
 
         private void CreateGuestEvent(object sender, EventArgs e)
         {
-
-            Controls.Add(new GuestPanel(CreateGuest())
+            string guestName = nameTextBox.Text.Trim();
+            if (string.IsNullOrEmpty(guestName))
             {
-                Location = new Point(10, 10 + Controls.Count * 30),
-                Width = 300,
-            });
+                MessageBox.Show("名前を入力してください。");
+                return;
+            }
 
+            Guest guest = CreateGuest(guestName);
+            int panelCount = Controls.OfType<GuestPanel>().Count();
+
+            GuestPanel panel = new GuestPanel(guest)
+            {
+                Location = new Point(10, 60 + panelCount * 60),
+                Size = new Size(300, 40)
+            };
+
+            Controls.Add(panel);
+            nameTextBox.Clear();
         }
 
-        private Guest CreateGuest()
-        {
-
-            return new GuestModel("Guest");
-
-        }
-
-        private Guest CreateMember()
-        {
-
-            return new MemberModel("Member");
-
-        }
-
+        private Guest CreateGuest(string guestName) => new GuestModel(guestName);
+        private Guest CreateMember() => new MemberModel("Member");
     }
-
 }

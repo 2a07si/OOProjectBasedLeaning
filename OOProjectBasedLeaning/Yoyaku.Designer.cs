@@ -1,6 +1,6 @@
 ﻿namespace OOProjectBasedLeaning
 {
-    partial class Yoyaku
+    partial class yoyaku
     {
         /// <summary>
         ///  Required designer variable.
