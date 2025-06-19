@@ -22,18 +22,33 @@ namespace OOProjectBasedLeaning
         {
             if (obj is GuestPanel guestPanel)
             {
+                bool isAlreadyOnThisForm = this.Controls.Contains(guestPanel);
+
                 guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
 
                 Guest guest = guestPanel.GetGuest();
-                try
+
+                if (isAlreadyOnThisForm)
                 {
-                    hotel.CheckIn(guest);
-                    MessageBox.Show($"{guest.Name} さんがホテルにチェックインしました。");
+                    MessageBox.Show(guest.Name + "さんは既にチェックインしています。",
+                        "チェックイン重複エラー",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    e.Effect = DragDropEffects.None;
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show($"チェックインに失敗しました: {ex.Message}");
+                    try
+                    {
+                        hotel.CheckIn(guest);
+                        MessageBox.Show($"{guest.Name} さんがホテルにチェックインしました。");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"チェックインに失敗しました: {ex.Message}");
+                    }
                 }
+
             }
         }
     }
