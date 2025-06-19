@@ -6,6 +6,8 @@ namespace OOProjectBasedLeaning
 {
     public partial class HomeForm : DragDropForm
     {
+        private Hotel hotel = new Hotel();
+
         public HomeForm()
         {
             Text = "Home Form";
@@ -20,9 +22,20 @@ namespace OOProjectBasedLeaning
 
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
-            if (obj is DragDropPanel panel)
+            if (obj is GuestPanel guestPanel)
             {
-                panel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+                guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+
+                Guest guest = guestPanel.GetGuest();
+                try
+                {
+                    hotel.CheckOut(guest);
+                    MessageBox.Show($"{guest.Name} さんがホテルにチェックアウトしました。");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"チェックアウトに失敗しました: {ex.Message}");
+                }
             }
         }
     }
