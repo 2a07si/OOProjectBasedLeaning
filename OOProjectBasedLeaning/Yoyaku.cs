@@ -23,17 +23,45 @@ namespace OOProjectBasedLeaning
 
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
-            if (obj is DragDropPanel panel)
-                panel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
-            MessageBox.Show("予約が完了しました。\n予約完了日時：" + UpdateTimeLabel() );
+            if (obj is GuestPanel guestPanel)
+            {
+                bool isAlreadyOnThisForm = this.Controls.Contains(guestPanel);
+
+                guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+
+                Guest guest = guestPanel.GetGuest();
+
+                if (isAlreadyOnThisForm)
+                {
+                    MessageBox.Show(guest.Name + "さんは既に予約済みです。\n予約完了日時：" + PastDate(), 
+                        "予約重複エラー",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    e.Effect = DragDropEffects.None;
+                }
+                else
+                {
+                    try
+                    {
+                        MessageBox.Show(guest.Name + "さんの予約が完了しました。\n予約完了日時：" + UpdateTimeLabel());
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(guest.Name + "さんの予約に失敗しました。" + ex.Message);
+                    }
+                }
+               
+            }
         }
         private string UpdateTimeLabel()
         {
-            // DateTime.Now で現在の日付と時刻を取得
-            // ToString() メソッドで表示形式を指定
-            // "yyyy/MM/dd HH:mm:ss" は「年/月/日 時:分:秒」の形式
             string date = DateTime.Now.ToString("yyyy年MM月dd日 HH:mm:ss");
             return date;
+        }
+        private string PastDate()
+        {
+            string past = UpdateTimeLabel();
+            return past;
         }
     }
 }
