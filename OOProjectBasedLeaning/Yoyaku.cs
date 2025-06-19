@@ -6,6 +6,8 @@ namespace OOProjectBasedLeaning
 {
     public partial class yoyaku : DragDropForm
     {
+        int panelCount = 1;
+        public DateTime? ReservationCompletedTime { get; private set; }
         public yoyaku()
         {
             this.Text = "—\–ñŠÇ—";
@@ -33,7 +35,8 @@ namespace OOProjectBasedLeaning
 
                 if (isAlreadyOnThisForm)
                 {
-                    MessageBox.Show(guest.Name + "‚³‚ñ‚ÍŠù‚É—\–ñÏ‚İ‚Å‚·B\n—\–ñŠ®—¹“úF" + PastDate(), 
+                    panelCount = 0;
+                    MessageBox.Show(guest.Name + "‚³‚ñ‚ÍŠù‚É—\–ñÏ‚İ‚Å‚·B\n—\–ñŠ®—¹“úF" + UpdateTimeLabel(), 
                         "—\–ñd•¡ƒGƒ‰[",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
@@ -41,6 +44,7 @@ namespace OOProjectBasedLeaning
                 }
                 else
                 {
+                    panelCount++;
                     try
                     {
                         MessageBox.Show(guest.Name + "‚³‚ñ‚Ì—\–ñ‚ªŠ®—¹‚µ‚Ü‚µ‚½B\n—\–ñŠ®—¹“úF" + UpdateTimeLabel());
@@ -55,13 +59,17 @@ namespace OOProjectBasedLeaning
         }
         private string UpdateTimeLabel()
         {
-            string date = DateTime.Now.ToString("yyyy”NMMŒdd“ú HH:mm:ss");
+            string date;
+            if (ReservationCompletedTime == null || panelCount!=0)
+            {
+                ReservationCompletedTime = DateTime.Now;
+                date = ReservationCompletedTime.Value.ToString("yyyy”NMMŒdd“ú HH:mm:ss");
+            }
+            else
+            {
+                date = ReservationCompletedTime.Value.ToString("yyyy”NMMŒdd“ú HH:mm:ss");
+            }
             return date;
-        }
-        private string PastDate()
-        {
-            string past = UpdateTimeLabel();
-            return past;
         }
     }
 }
