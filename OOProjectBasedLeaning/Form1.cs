@@ -16,7 +16,7 @@ namespace OOProjectBasedLeaning
         {
             InitializeComponent();
 
-            new Yoyaku().Show();
+            new yoyaku().Show();
 
             new HotelForm().Show();
 
