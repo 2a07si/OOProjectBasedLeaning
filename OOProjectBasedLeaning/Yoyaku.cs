@@ -25,6 +25,7 @@ namespace OOProjectBasedLeaning
         {
             if (obj is DragDropPanel panel)
                 panel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+            MessageBox.Show("—\–ñ‚ªŠ®—¹‚µ‚Ü‚µ‚½");
         }
     }
 }
