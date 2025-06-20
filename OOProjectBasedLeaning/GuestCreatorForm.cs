@@ -12,7 +12,7 @@ namespace OOProjectBasedLeaning
         private ComboBox cmbLeaderRank;        // 代表のランクを選択するコンボボックス
         private NumericUpDown nudCompanionCount; // お連れ様の人数を指定する数値入力
         private Button btnCreate;              // ゲスト生成トリガーボタン
-        private FlowLayoutPanel flow;          // 生成された GuestPanel を並べるコンテナ
+        private FlowLayoutPanel flow;         // 生成された GuestPanel を縦並びで保持する FlowLayoutPanel
 
         public GuestCreatorForm()
         {
@@ -34,7 +34,7 @@ namespace OOProjectBasedLeaning
             // 代表名入力用テキストボックス
             txtLeaderName = new TextBox
             {
-                Location = new Point(91, 8),
+                Location = new Point(94, 8),
                 Size = new Size(250, 24)
             };
             Controls.Add(txtLeaderName);
@@ -50,7 +50,7 @@ namespace OOProjectBasedLeaning
             // ランクを選択するコンボボックス
             cmbLeaderRank = new ComboBox
             {
-                Location = new Point(90, 41),
+                Location = new Point(94, 43),
                 Size = new Size(120, 24),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
@@ -86,10 +86,10 @@ namespace OOProjectBasedLeaning
                 Size = new Size(100, 40)
             };
 
-            // クリック時に CreateGuestEvent メソッドを呼び出す
             btnCreate.Click += CreateGuestEvent;
             Controls.Add(btnCreate);
 
+            // ------- GuestPanel 用コンテナ -------
             flow = new FlowLayoutPanel
             {
                 Location = new Point(70, 120),
@@ -101,62 +101,73 @@ namespace OOProjectBasedLeaning
                 Margin = new Padding(0)
             };
             Controls.Add(flow);
-        }        
+        }
 
+        // 代表＋お連れ様をまとめて GuestPanel にし、flow に追加
         private void CreateGuestEvent(object sender, EventArgs e)
         {
             // 代表名チェック
             string leaderName = txtLeaderName.Text.Trim();
-            if (leaderName == "")
+            if (string.IsNullOrEmpty(leaderName))
             {
                 MessageBox.Show("代表名を入力してください。");
                 return;
             }
 
-            // 代表オブジェクト生成
             Guest leader;
             switch (cmbLeaderRank.SelectedItem.ToString())
             {
                 case "会員":
-                    leader = new MemberModel(leaderName, isVip: false);
+                    leader = new MemberModel(Member.NEW, leaderName, /*isVip:*/ false);
                     break;
                 case "VIP":
-                    leader = new MemberModel(leaderName, isVip: true);
+                    leader = new MemberModel(Member.NEW, leaderName, /*isVip:*/ true);
                     break;
                 default:
                     leader = new GuestModel(leaderName);
                     break;
             }
 
-            // お連れ様入力フォーム（必要数）
+            // お連れ様入力フォーム
             int count = (int)nudCompanionCount.Value;
             if (count > 0)
             {
-                // お連れ様入力フォームを開く
                 using var compForm = new GuestCompanionForm(count);
                 if (compForm.ShowDialog() != DialogResult.OK) return;
+
                 foreach (var info in compForm.CompanionInfos)
                 {
                     Guest g = info.Rank switch
                     {
-                        CompanionRank.会員 => new MemberModel(info.Name, isVip: false),
-                        CompanionRank.VIP => new MemberModel(info.Name, isVip: true),  
+                        CompanionRank.会員 => new MemberModel(Member.NEW, info.Name, /*isVip:*/ false),
+                        CompanionRank.VIP => new MemberModel(Member.NEW, info.Name, /*isVip:*/ true),
                         _ => new GuestModel(info.Name)
                     };
                     leader.AddCompanion(g);
                 }
             }
 
-            // GuestPanel を生成して flow に追加
+            // Panel 生成・追加
             var panel = new GuestPanel(leader)
             {
-                Margin = new Padding(0, 0, 0, 10)  // 下10px余白
+                Margin = new Padding(0, 0, 0, 10)
             };
             flow.Controls.Add(panel);
         }
 
-
+        // 使わない予定
         private Guest CreateGuest(string guestName) => new GuestModel(guestName);
         private Guest CreateMember() => new MemberModel("Member");
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData) // ショートカットキー
+        {
+            // F12キーを押した時
+            if (keyData == Keys.F12)
+            {
+                Application.Exit(); // プログラム終了
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
     }
 }

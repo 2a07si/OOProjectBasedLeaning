@@ -17,7 +17,7 @@ namespace OOProjectBasedLeaning
             // 枠線と内側余白
             BorderStyle = BorderStyle.FixedSingle;
             Padding = new Padding(5);
-            Size = new Size(200, 65);
+            Size = new Size(170, 65);
             BackColor = Color.White;
 
             leaderLabel = new Label
