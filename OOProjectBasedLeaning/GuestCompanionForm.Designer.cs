@@ -1,6 +1,6 @@
 ﻿namespace OOProjectBasedLeaning
 {
-    partial class HotelForm
+    partial class GuestCompanionForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,29 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            panel1 = new Panel();
-            SuspendLayout();
-            // 
-            // panel1
-            // 
-            panel1.Location = new Point(130, 133);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(300, 150);
-            panel1.TabIndex = 0;
-            // 
-            // HotelForm
-            // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(panel1);
-            Name = "HotelForm";
-            Text = "HotelForm";
-            ResumeLayout(false);
+            this.components = new System.ComponentModel.Container();
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Text = "GuestCompanionForm";
         }
 
         #endregion
-
-        private Panel panel1;
     }
 }

@@ -5,33 +5,127 @@ namespace OOProjectBasedLeaning
 {
     public class GuestPanel : DragDropPanel
     {
-        private Guest guest;
-        private Label guestNameLabel;
+        private readonly Guest guest;
+        private readonly Label leaderLabel;
+        private readonly FlowLayoutPanel iconPanel;
+        private readonly Button btnDetail;
 
         public GuestPanel(Guest guest)
         {
             this.guest = guest;
-            Size = new Size(300, 40);
-            BackColor = Color.LightYellow;
-            InitializeComponent();
+
+            // 枠線と内側余白
+            BorderStyle = BorderStyle.FixedSingle;
+            Padding = new Padding(5);
+            Size = new Size(200, 65);
+            BackColor = Color.White;
+
+            leaderLabel = new Label
+            {
+                Text = guest.Name,
+                Location = new Point(5, 5),
+                AutoSize = true
+            };
+            Controls.Add(leaderLabel);
+
+            iconPanel = new FlowLayoutPanel
+            {
+                Location = new Point(5, 25),
+                Size = new Size(180, 30),
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                Anchor = AnchorStyles.Left | AnchorStyles.Top
+            };
+            Controls.Add(iconPanel);
+
+            RefreshIcons();
+
+            btnDetail = new Button
+            {
+                Text = "▽",
+                Font = new Font(FontFamily.GenericSansSerif, 12, FontStyle.Bold),
+                Size = new Size(24, 30),
+                Location = new Point(this.ClientSize.Width - 30, 5),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                FlatStyle = FlatStyle.Flat,
+                TextAlign = ContentAlignment.TopCenter,
+            };
+            btnDetail.FlatAppearance.BorderSize = 0;
+            btnDetail.Click += (s, e) => ShowCompanionNames();
+            Controls.Add(btnDetail);
+            btnDetail.BringToFront();
+        }
+
+        protected override void OnMouseDoubleClick(MouseEventArgs e)
+        {
+            base.OnMouseDoubleClick(e);
+            ShowCompanionNames();
+        }
+
+        private void RefreshIcons()
+        {
+            iconPanel.Controls.Clear();
+            iconPanel.Controls.Add(CreateStatusIcon(guest));
+
+            // リーダーと連れアイコンの間に余白
+            var spacer = new Panel { Width = 10, Height = 1 };
+            iconPanel.Controls.Add(spacer);
+
+            // 連れアイコン
+            foreach (var c in guest.Companions)
+            {
+                iconPanel.Controls.Add(CreateStatusIcon(c));
+            }
+        }
+
+        protected override void OnPanelMouseDown() => DoDragDropMove();
+
+        private Control CreateStatusIcon(Guest g)
+        {
+            var pb = new PictureBox
+            {
+                Size = new Size(16, 16),
+                Margin = new Padding(2)
+            };
+            if (g.IsVIP()) pb.BackColor = Color.Gold;
+            else if (g.IsMember()) pb.BackColor = Color.Silver;
+            else pb.BackColor = Color.Black;
+            return pb;
+        }
+
+        private void ShowCompanionNames()
+        {
+            if (guest.Companions.Count == 0)
+            {
+                MessageBox.Show("お連れ様はいません。");
+                return;
+            }
+
+            int rows = guest.Companions.Count;
+            int formWidth = 300;
+            int formHeight = 30 + rows * 25 + 20;  // 見出し＋各行25px＋余白
+
+            using var detail = new Form
+            {
+                StartPosition = FormStartPosition.CenterParent,
+                ClientSize = new Size(formWidth, formHeight),
+                Text = "お連れ様一覧"
+            };
+            var lb = new ListBox
+            {
+                Dock = DockStyle.Fill,
+                Font = new Font("MS UI Gothic", 10)
+            };
+            foreach (var c in guest.Companions)
+            {
+                string rank = c.IsVIP() ? "VIP" : c.IsMember() ? "会員" : "一般";
+                lb.Items.Add($"{c.Name} ({rank})");
+            }
+            detail.Controls.Add(lb);
+            detail.ShowDialog();
         }
 
         public Guest GetGuest() => guest;
 
-        private void InitializeComponent()
-        {
-            guestNameLabel = new Label
-            {
-                Text = $"ゲスト名： {guest.Name}",
-                AutoSize = true,
-                Location = new Point(10, 10)
-            };
-            Controls.Add(guestNameLabel);
-        }
-
-        protected override void OnPanelMouseDown()
-        {
-            DoDragDropMove();
-        }
     }
 }
