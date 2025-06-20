@@ -34,8 +34,8 @@ namespace OOProjectBasedLeaning
             // 代表名入力用テキストボックス
             txtLeaderName = new TextBox
             {
-                Location = new Point(90, 8),
-                Size = new Size(200, 24)
+                Location = new Point(91, 8),
+                Size = new Size(250, 24)
             };
             Controls.Add(txtLeaderName);
 
@@ -73,7 +73,7 @@ namespace OOProjectBasedLeaning
                 Location = new Point(369, 43),
                 Minimum = 0,   // 0〜3 人まで
                 Maximum = 3,
-                Width = 40
+                Width = 43
             };
             Controls.Add(nudCompanionCount);
 

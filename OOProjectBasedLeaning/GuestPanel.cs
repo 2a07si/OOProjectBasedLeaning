@@ -80,12 +80,12 @@ namespace OOProjectBasedLeaning
 
         protected override void OnPanelMouseDown() => DoDragDropMove();
 
-        private Control CreateStatusIcon(Guest g)
+        private Control CreateStatusIcon(Guest g) // ランクアイコン定義
         {
             var pb = new PictureBox
             {
                 Size = new Size(16, 16),
-                Margin = new Padding(2)
+                Margin = new Padding(left: 2, top: 6, right: 2, bottom: 0)
             };
             if (g.IsVIP()) pb.BackColor = Color.Gold;
             else if (g.IsMember()) pb.BackColor = Color.Silver;
