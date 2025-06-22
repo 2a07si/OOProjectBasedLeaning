@@ -1,5 +1,4 @@
-﻿// HotelForm.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -134,7 +133,7 @@ namespace OOProjectBasedLeaning
                 return;
             }
 
-            // UI 移動 → 色更新 → 確認メッセージ
+            // UI 移動 → 色更新 → メッセージ
             if (oldBox != null)
             {
                 oldBox.Controls.Remove(gp);
