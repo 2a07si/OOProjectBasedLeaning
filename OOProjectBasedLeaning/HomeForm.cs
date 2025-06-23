@@ -6,17 +6,16 @@ namespace OOProjectBasedLeaning
 {
     public partial class HomeForm : DragDropForm
     {
-        int panelCount = 1;
         public DateTime? ReservationCompletedTime { get; private set; }
 
         private Hotel hotel = new Hotel();
+        private bool isCheckedOut = false;
 
         public HomeForm()
         {
             Text = "Home Form";
             Size = new Size(400, 400);
             BackColor = Color.White;
-
         }
 
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
@@ -29,15 +28,12 @@ namespace OOProjectBasedLeaning
             if (obj is GuestPanel guestPanel)
             {
                 bool isAlreadyOnThisForm = this.Controls.Contains(guestPanel);
-
                 guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
-
                 Guest guest = guestPanel.GetGuest();
 
-                if (isAlreadyOnThisForm)
+                if (isAlreadyOnThisForm || isCheckedOut)
                 {
-                    panelCount = 0;
-                    MessageBox.Show(guest.Name + "さんは既にチェックアウト済みです。\nチェックアウト完了日時：" + UpdateTimeLabel(),
+                    MessageBox.Show($"{guest.Name} さんは既にチェックアウト済みです。\nチェックアウト完了日時：{ReservationCompletedTime?.ToString("yyyy年MM月dd日 HH:mm:ss")}",
                         "チェックアウト重複エラー",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
@@ -45,12 +41,15 @@ namespace OOProjectBasedLeaning
                 }
                 else
                 {
-                    panelCount++;
-
                     try
                     {
                         hotel.CheckOut(guest);
-                        MessageBox.Show($"{guest.Name} さんがホテルからチェックアウトしました。");
+                        isCheckedOut = true;
+                        ReservationCompletedTime = DateTime.Now;
+
+                        MessageBox.Show($"{guest.Name} さんがホテルからチェックアウトしました。\nチェックアウト完了日時：{ReservationCompletedTime?.ToString("yyyy年MM月dd日 HH:mm:ss")}");
+
+                        CreateReview(guest);
                     }
                     catch (Exception ex)
                     {
@@ -59,20 +58,25 @@ namespace OOProjectBasedLeaning
                 }
             }
         }
-        private string UpdateTimeLabel()
-        {
-            string date;
-            if (ReservationCompletedTime == null || panelCount != 0)
-            {
-                ReservationCompletedTime = DateTime.Now;
-                date = ReservationCompletedTime.Value.ToString("yyyy年MM月dd日 HH:mm:ss");
-            }
-            else
-            {
-                date = ReservationCompletedTime.Value.ToString("yyyy年MM月dd日 HH:mm:ss");
-            }
-            return date;
-        }
 
+        private void CreateReview(Guest guest)
+        {
+            int rating = 0;
+            while (true)
+            {
+                string input = Microsoft.VisualBasic.Interaction.InputBox("1〜5の評価を入力してください。（☆の数）", "レビュー評価", "5");
+                if (int.TryParse(input, out rating) && rating >= 1 && rating <= 5)
+                {
+                    break;
+                }
+                MessageBox.Show("1〜5の数字で入力してください。");
+            }
+
+            string comment = Microsoft.VisualBasic.Interaction.InputBox("コメントを入力してください。", "レビューコメント", "");
+
+            string stars = new string('★', rating) + new string('☆', 5 - rating);
+
+            MessageBox.Show($"{guest.Name} さんのレビュー\n評価：{stars}\nコメント：{comment}", "レビュー内容");
+        }
     }
 }
