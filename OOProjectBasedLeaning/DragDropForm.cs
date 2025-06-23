@@ -11,9 +11,9 @@ namespace OOProjectBasedLeaning
     {
         public DragDropForm()
         {
-            AllowDrop = true;
-            DragEnter += DragDropForm_DragEnter;
-            DragDrop += DragDropForm_DragDrop;
+            AllowDrop = true; // このフォーム全体でドラッグドロップ許可
+            DragEnter += DragDropForm_DragEnter; // ドラッグがフォーム領域に入ってきたとき
+            DragDrop += DragDropForm_DragDrop; // ドロップされたとき
         }
 
         private void DragDropForm_DragEnter(object? sender, DragEventArgs e)

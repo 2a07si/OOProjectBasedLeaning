@@ -7,7 +7,7 @@ namespace OOProjectBasedLeaning
 {
     public partial class HotelForm : DragDropForm
     {
-        // ホテルのロジックを保持
+        // ホテルロジック
         private readonly Hotel hotel = new Hotel();
         // GroupBox ↔ Room の対応マップ
         private readonly Dictionary<GroupBox, Room> roomBoxes = new();
@@ -93,6 +93,19 @@ namespace OOProjectBasedLeaning
             var newRoom = roomBoxes[newBox];
             var guest = gp.GetGuest();
 
+            var oldBox = gp.Parent as GroupBox;
+            if (oldBox != null && oldBox != newBox)
+            {
+                MessageBox.Show(
+                    "部屋間の直接移動はできません。\n" +
+                    "一度ホテルからチェックアウトしてください",
+                    "操作エラー",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                return;
+            }
+
             // 重複チェック
             if (newBox.Controls.Contains(gp))
             {
@@ -106,7 +119,6 @@ namespace OOProjectBasedLeaning
             }
 
             // 旧部屋チェックアウト
-            var oldBox = gp.Parent as GroupBox;
             Room oldRoom = null;
             if (oldBox != null)
                 roomBoxes.TryGetValue(oldBox, out oldRoom);
