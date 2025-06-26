@@ -7,7 +7,7 @@ namespace OOProjectBasedLeaning
 {
     public partial class HomeForm : DragDropForm
     {
-        private Hotel hotel = new Hotel();
+        private Hotel hotel = Hotel.Instance;
 
         // パネルごとにチェックアウト時間を管理
         private readonly Dictionary<GuestPanel, DateTime> checkoutTime = new();
