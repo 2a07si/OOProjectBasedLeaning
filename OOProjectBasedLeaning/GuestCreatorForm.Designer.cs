@@ -37,6 +37,7 @@
             ClientSize = new Size(778, 744);
             Margin = new Padding(4, 5, 4, 5);
             Name = "GuestCreatorForm";
+            StartPosition = FormStartPosition.Manual;
             Text = "GuestCreatorForm";
             ResumeLayout(false);
         }

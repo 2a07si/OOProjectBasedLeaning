@@ -15,15 +15,39 @@ namespace OOProjectBasedLeaning
         public Form1()
         {
             InitializeComponent();
+            this.Shown += Form1_Shown;
 
-            new yoyaku().Show();
 
-            new HotelForm().Show();
+        }
+        private void Form1_Shown(object? sender, EventArgs e)
+        {
+            var hotelForm = new HotelForm()
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = new Point(-15, 0)
+            };
+            hotelForm.Show();
 
-            new HomeForm().Show();
+            var guestForm = new GuestCreatorForm()
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = new Point(1348, 427)
+            };
+            guestForm.Show();
+            var yoyakuForm = new yoyaku()
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = new Point(450, 427)
+            };
+            yoyakuForm.Show();
 
-            new GuestCreatorForm().Show();
-
+            var homeForm = new HomeForm()
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = new Point(0, 427)
+            };
+            homeForm.Show();
+            this.Hide();
         }
     }
 }

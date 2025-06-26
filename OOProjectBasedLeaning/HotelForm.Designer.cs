@@ -251,13 +251,14 @@
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.OldLace;
-            ClientSize = new Size(1782, 382);
+            ClientSize = new Size(1914, 382);
             Controls.Add(gbx_10);
             Controls.Add(gbx_8);
             Controls.Add(gbx_7);
             Controls.Add(gbx_6);
             Controls.Add(gbx_5);
             Name = "HotelForm";
+            StartPosition = FormStartPosition.Manual;
             Text = "HotelForm";
             gbx_5.ResumeLayout(false);
             gbx_6.ResumeLayout(false);
