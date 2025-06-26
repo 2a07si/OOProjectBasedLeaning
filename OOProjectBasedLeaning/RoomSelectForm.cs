@@ -14,11 +14,12 @@ namespace OOProjectBasedLeaning
     {
         public Room SelectedRoom { get; private set; }
 
-        public RoomSelectForm(List<Room> availableRooms)
+        public RoomSelectForm(List<Room> availableRooms, List<Room> reservedRooms)
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterParent;
             this.Size = new Size(350, 450);
+
 
             ComboBox comboBox = new ComboBox
             {
@@ -27,6 +28,11 @@ namespace OOProjectBasedLeaning
                 Left = 20,
                 Top = 20
             };
+
+            var filteredRooms = availableRooms
+            .Where(room => !reservedRooms.Contains(room))
+            .ToList();
+
 
             foreach (var room in availableRooms)
             {
@@ -47,7 +53,14 @@ namespace OOProjectBasedLeaning
 
             confirmBtn.Click += (s, e) =>
             {
-                SelectedRoom = comboBox.SelectedItem as Room;
+                var select = comboBox.SelectedItem as Room;
+                if (reservedRooms.Contains(select))
+                {
+                    MessageBox.Show("この部屋はすでに予約されています。", "予約エラー", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return; // 選択処理をなかったことにする
+                }
+
+                SelectedRoom = select;
                 DialogResult = DialogResult.OK;
                 Close();
             };

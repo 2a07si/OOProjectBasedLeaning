@@ -1,6 +1,8 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using OOProjectBasedLeaning;
+
 
 namespace OOProjectBasedLeaning
 {
@@ -11,15 +13,16 @@ namespace OOProjectBasedLeaning
         private List<Room> availableRooms;
 
         int panelCount = 1;
+
         public DateTime? ReservationCompletedTime { get; private set; }
+
+        private Dictionary<Guest, Room> guestRoomMap = new();
         public yoyaku()
         {
             this.Text = "—\–ñŠÇ—";
             this.Size = new Size(800, 600);
 
-            new GuestCreatorForm().Show();
-            new HomeForm().Show();
-            new HotelForm().Show();
+           
 
             reservedRooms = new List<Room>();
             allRooms = new List<Room>
@@ -41,18 +44,27 @@ namespace OOProjectBasedLeaning
 
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
+            var roomForm = new RoomSelectForm(allRooms, reservedRooms);
+
             if (obj is GuestPanel guestPanel)
             {
                 bool isAlreadyOnThisForm = this.Controls.Contains(guestPanel);
 
-                guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+               guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+
+
 
                 Guest guest = guestPanel.GetGuest();
 
                 if (isAlreadyOnThisForm)
                 {
                     panelCount = 0;
-                    MessageBox.Show(guest.Name + "‚³‚ñ‚ÍŠù‚É—\–ñÏ‚İ‚Å‚·B\n—\–ñŠ®—¹“úF" + UpdateTimeLabel(), 
+
+                    string reservedRoomNumber = guestRoomMap.TryGetValue(guest, out var room)
+                    ? room.RoomNumber.ToString()
+                    : "•s–¾";
+
+                    MessageBox.Show(guest.Name + "‚³‚ñ‚ÍŠù‚É—\–ñÏ‚İ‚Å‚·B\n—\–ñŠ®—¹“úF" + UpdateTimeLabel() + "\n—\–ñ•”‰®”Ô†F" + reservedRoomNumber,
                         "—\–ñd•¡ƒGƒ‰[",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
@@ -62,7 +74,7 @@ namespace OOProjectBasedLeaning
                 {
                     panelCount++;
 
-                    var selectForm = new RoomSelectForm(availableRooms);
+                    var selectForm = new RoomSelectForm(availableRooms,reservedRooms);
                     if (selectForm.ShowDialog() == DialogResult.OK)
                     {
                         Room selectRoom = selectForm.SelectedRoom;
@@ -74,6 +86,8 @@ namespace OOProjectBasedLeaning
 
                             try
                             {
+                                guestRoomMap[guest] = selectRoom;
+                                reservedRooms.Add(selectRoom);
                                 MessageBox.Show(guest.Name + "‚³‚ñ‚Ì—\–ñ‚ªŠ®—¹‚µ‚Ü‚µ‚½B\n—\–ñŠ®—¹“úF" + UpdateTimeLabel() + "\n—\–ñ‚³‚ê‚½•”‰®”Ô†F" + selectRoom.RoomNumber);
                             }
                             catch (Exception ex)

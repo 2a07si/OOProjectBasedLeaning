@@ -36,6 +36,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             Name = "yoyaku";
+            StartPosition = FormStartPosition.Manual;
             Text = "Yoyaku";
             ResumeLayout(false);
         }
