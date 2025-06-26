@@ -1,6 +1,8 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using OOProjectBasedLeaning;
+
 
 namespace OOProjectBasedLeaning
 {
@@ -11,6 +13,7 @@ namespace OOProjectBasedLeaning
         private List<Room> availableRooms;
 
         int panelCount = 1;
+
         public DateTime? ReservationCompletedTime { get; private set; }
         public yoyaku()
         {
@@ -41,6 +44,8 @@ namespace OOProjectBasedLeaning
 
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
+            var roomForm = new RoomSelectForm(allRooms, reservedRooms);
+
             if (obj is GuestPanel guestPanel)
             {
                 bool isAlreadyOnThisForm = this.Controls.Contains(guestPanel);
@@ -62,7 +67,7 @@ namespace OOProjectBasedLeaning
                 {
                     panelCount++;
 
-                    var selectForm = new RoomSelectForm(availableRooms);
+                    var selectForm = new RoomSelectForm(availableRooms,reservedRooms);
                     if (selectForm.ShowDialog() == DialogResult.OK)
                     {
                         Room selectRoom = selectForm.SelectedRoom;
