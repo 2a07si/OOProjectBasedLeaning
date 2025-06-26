@@ -136,7 +136,7 @@ namespace OOProjectBasedLeaning
         }
         private string UpdateTimeLabel()
         {
-            string date;
+            string date;Å@
             if (ReservationCompletedTime == null || panelCount!=0)
             {
                 ReservationCompletedTime = DateTime.Now;
