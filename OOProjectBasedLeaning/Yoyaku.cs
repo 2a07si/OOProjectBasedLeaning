@@ -17,6 +17,8 @@ namespace OOProjectBasedLeaning
         public DateTime? ReservationCompletedTime { get; private set; }
 
         private Dictionary<Guest, Room> guestRoomMap = new();
+        private Guest guestLeader;
+
         public yoyaku()
         {
             this.Text = "ó\ñÒä«óù";
@@ -44,7 +46,7 @@ namespace OOProjectBasedLeaning
 
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
-            var roomForm = new RoomSelectForm(allRooms, reservedRooms);
+            var roomForm = new RoomSelectForm(allRooms, reservedRooms, guestLeader);
 
             if (obj is GuestPanel guestPanel)
             {
@@ -74,13 +76,15 @@ namespace OOProjectBasedLeaning
                 {
                     panelCount++;
 
-                    var selectForm = new RoomSelectForm(availableRooms,reservedRooms);
+                    var selectForm = new RoomSelectForm(availableRooms,reservedRooms, guestLeader);
                     if (selectForm.ShowDialog() == DialogResult.OK)
                     {
                         Room selectRoom = selectForm.SelectedRoom;
 
                         if (selectRoom != null)
                         {
+                            selectRoom.AddGuests(new List<Guest> { guest });
+                            guestRoomMap[guest] = selectRoom;
                             reservedRooms.Add(selectRoom);
                             UpdateAvailableRooms();
 

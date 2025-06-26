@@ -14,7 +14,7 @@ namespace OOProjectBasedLeaning
     {
         public Room SelectedRoom { get; private set; }
 
-        public RoomSelectForm(List<Room> availableRooms, List<Room> reservedRooms)
+        public RoomSelectForm(List<Room> availableRooms, List<Room> reservedRooms, Guest guestLeader)
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterParent;
@@ -53,7 +53,17 @@ namespace OOProjectBasedLeaning
 
             confirmBtn.Click += (s, e) =>
             {
-                var select = comboBox.SelectedItem as Room;
+               var select = comboBox.SelectedItem as Room;
+
+                //bool suite = select.RoomNumber >= 1000;
+                //bool hasAuthority = guestLeader.IsVIP() || guestLeader.IsMember() || guestLeader.Any(c => c.IsVIP() || c.IsMember());
+
+                //if (suite && !hasAuthority)
+                //{
+                //    MessageBox.Show("スイートルームはVIPまたは会員の同行者が必要です。", "予約不可", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                //    return;
+                //}
+
                 if (reservedRooms.Contains(select))
                 {
                     MessageBox.Show("この部屋はすでに予約されています。", "予約エラー", MessageBoxButtons.OK, MessageBoxIcon.Warning);
