@@ -21,7 +21,7 @@ namespace OOProjectBasedLeaning
         public HomeForm()
         {
             Text = "Home Form";
-            Size = new Size(800, 500);
+            Size = new Size(650, 500);
             BackColor = Color.White;
 
             // ゲストパネル表示エリア
@@ -40,7 +40,7 @@ namespace OOProjectBasedLeaning
             {
                 Text = "レビュー確認",
                 Size = new Size(120, 40),
-                Location = new Point(420, 20)
+                Location = new Point(400, 20)
             };
             reviewButton.Click += ReviewButton_Click;
             Controls.Add(reviewButton);
