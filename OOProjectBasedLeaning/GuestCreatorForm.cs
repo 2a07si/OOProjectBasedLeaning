@@ -14,6 +14,7 @@ namespace OOProjectBasedLeaning
         private Button btnCreate;              // ゲスト生成トリガーボタン
         private FlowLayoutPanel flow;         // 生成された GuestPanel を縦並びで保持する FlowLayoutPanel
 
+
         public GuestCreatorForm()
         {
             InitializeComponent();
@@ -169,5 +170,6 @@ namespace OOProjectBasedLeaning
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
+
     }
 }

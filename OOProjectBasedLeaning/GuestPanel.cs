@@ -10,6 +10,9 @@ namespace OOProjectBasedLeaning
         private readonly FlowLayoutPanel iconPanel;
         private readonly Button btnDetail;
 
+        public Control? OriginalContainer { get; set; }
+
+
         public GuestPanel(Guest guest)
         {
             this.guest = guest;

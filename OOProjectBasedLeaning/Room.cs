@@ -85,6 +85,7 @@ namespace OOProjectBasedLeaning
         {
             bool privileged = HasVIP()
                               || guests.Any(g => g.IsMember() || g.IsVIP());
+
             if (!privileged)
                 throw new InvalidOperationException(
                     "スイートルームには会員またはVIP権限者が必要です。");

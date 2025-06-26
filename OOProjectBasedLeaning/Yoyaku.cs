@@ -50,21 +50,19 @@ namespace OOProjectBasedLeaning
 
             if (obj is GuestPanel guestPanel)
             {
+                Guest guest = guestPanel.GetGuest();
+
                 bool isAlreadyOnThisForm = this.Controls.Contains(guestPanel);
 
                guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
 
+                string reservedRoomNumber = guestRoomMap.TryGetValue(guest, out var room)
+                  ? room.RoomNumber.ToString()
+                  : "不明";
 
-
-                Guest guest = guestPanel.GetGuest();
-
-                if (isAlreadyOnThisForm)
+            if (isAlreadyOnThisForm)
                 {
                     panelCount = 0;
-
-                    string reservedRoomNumber = guestRoomMap.TryGetValue(guest, out var room)
-                    ? room.RoomNumber.ToString()
-                    : "不明";
 
                     MessageBox.Show(guest.Name + "さんは既に予約済みです。\n予約完了日時：" + UpdateTimeLabel() + "\n予約部屋番号：" + reservedRoomNumber,
                         "予約重複エラー",
@@ -76,28 +74,50 @@ namespace OOProjectBasedLeaning
                 {
                     panelCount++;
 
-                    var selectForm = new RoomSelectForm(availableRooms,reservedRooms, guestLeader);
+                    var selectForm = new RoomSelectForm(availableRooms, reservedRooms, guestLeader);
+
                     if (selectForm.ShowDialog() == DialogResult.OK)
                     {
-                        Room selectRoom = selectForm.SelectedRoom;
-
-                        if (selectRoom != null)
+                        try
                         {
-                            selectRoom.AddGuests(new List<Guest> { guest });
+                            Room selectRoom = selectForm.SelectedRoom;
+
+                            if (selectRoom == null)
+                                throw new InvalidOperationException("部屋が選択されていません。");
+
+                            // 予約処理（内部でVIP/会員判定も行われる）
+                            var guests = new List<Guest> { guest };
+
+                            if (guest.Companions is List<Guest> companions)
+                            {
+                                guests.AddRange(companions);
+                            }
+
+                            selectRoom.AddGuests(guests);
+
                             guestRoomMap[guest] = selectRoom;
                             reservedRooms.Add(selectRoom);
                             UpdateAvailableRooms();
 
-                            try
+                            MessageBox.Show(
+                                $"{guest.Name}さんの予約が完了しました。\n" +
+                                $"予約完了日時：{UpdateTimeLabel()}\n" +
+                                $"予約された部屋番号：{selectRoom.RoomNumber}"
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(
+                                $"{guest.Name}さんの予約に失敗しました：\n{ex.Message}",
+                                "予約エラー",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning
+                            );
+                            if (reservedRoomNumber == "不明")
                             {
-                                guestRoomMap[guest] = selectRoom;
-                                reservedRooms.Add(selectRoom);
-                                MessageBox.Show(guest.Name + "さんの予約が完了しました。\n予約完了日時：" + UpdateTimeLabel() + "\n予約された部屋番号：" + selectRoom.RoomNumber);
+                                guestPanel.BackColor = Color.Yellow;
                             }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(guest.Name + "さんの予約に失敗しました。" + ex.Message);
-                            }
+
                         }
                     }
                     else
