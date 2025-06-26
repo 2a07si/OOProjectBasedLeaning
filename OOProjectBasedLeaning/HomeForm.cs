@@ -12,11 +12,50 @@ namespace OOProjectBasedLeaning
         // パネルごとにチェックアウト時間を管理
         private readonly Dictionary<GuestPanel, DateTime> checkoutTime = new();
 
+        // ゲストパネル表示用パネル
+        private FlowLayoutPanel guestPanelArea;
+
+        // チェックアウト履歴表示用パネル
+        private FlowLayoutPanel flow;
+
+        // レビュー保存用辞書
+        private Dictionary<Guest, string> reviewData = new();
+
         public HomeForm()
         {
             Text = "Home Form";
-            Size = new Size(400, 400);
+            Size = new Size(800, 500);
             BackColor = Color.White;
+
+            // ゲストパネル表示エリア
+            guestPanelArea = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Left,
+                Width = 400,
+                AutoScroll = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
+            };
+            Controls.Add(guestPanelArea);
+
+            // チェックアウト履歴表示エリア
+            flow = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Right,
+                Width = 300,
+                AutoScroll = true
+            };
+            Controls.Add(flow);
+
+            // レビュー確認ボタン
+            Button reviewButton = new Button
+            {
+                Text = "レビュー確認",
+                Size = new Size(120, 40),
+                Location = new Point(420, 20)
+            };
+            reviewButton.Click += ReviewButton_Click;
+            Controls.Add(reviewButton);
         }
 
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
@@ -28,11 +67,8 @@ namespace OOProjectBasedLeaning
         {
             if (obj is GuestPanel guestPanel)
             {
-                bool isAlreadyOnThisForm = this.Controls.Contains(guestPanel);
-                guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
                 Guest guest = guestPanel.GetGuest();
 
-                // パネル単位でチェックアウト済みか確認
                 if (checkoutTime.ContainsKey(guestPanel))
                 {
                     MessageBox.Show($"{guest.Name} さんは既にチェックアウト済みです。\nチェックアウト完了日時：{checkoutTime[guestPanel]:yyyy年MM月dd日 HH:mm:ss}",
@@ -48,11 +84,39 @@ namespace OOProjectBasedLeaning
                         hotel.CheckOut(guest);
                         DateTime completedTime = DateTime.Now;
 
-                        // パネルのチェックアウト完了時間を登録
                         checkoutTime[guestPanel] = completedTime;
 
-                        MessageBox.Show($"{guest.Name} さん（このパネル）がホテルからチェックアウトしました。\nチェックアウト完了日時：{completedTime:yyyy年MM月dd日 HH:mm:ss}");
+                        MessageBox.Show($"{guest.Name} さんがホテルからチェックアウトしました。\nチェックアウト完了日時：{completedTime:yyyy年MM月dd日 HH:mm:ss}");
 
+                        // ゲストパネルを表示エリアに追加
+                        if (!guestPanelArea.Controls.Contains(guestPanel))
+                        {
+                            guestPanelArea.Controls.Add(guestPanel);
+                        }
+
+                        // チェックアウト履歴ラベル作成
+                        Label checkoutLabel = new Label
+                        {
+                            AutoSize = true,
+                            Cursor = Cursors.Hand
+                        };
+
+                        // 履歴クリック時のレビュー表示イベント
+                        checkoutLabel.Click += (sender, args) =>
+                        {
+                            if (reviewData.ContainsKey(guest))
+                            {
+                                MessageBox.Show($"{guest.Name} さんのレビュー\n{reviewData[guest]}", "レビュー内容");
+                            }
+                            else
+                            {
+                                MessageBox.Show("レビューは未登録です。");
+                            }
+                        };
+
+                        flow.Controls.Add(checkoutLabel);
+
+                        // レビュー入力処理
                         CreateReview(guest);
                     }
                     catch (Exception ex)
@@ -77,10 +141,37 @@ namespace OOProjectBasedLeaning
             }
 
             string comment = Microsoft.VisualBasic.Interaction.InputBox("コメントを入力してください。", "レビューコメント", "");
-
             string stars = new string('★', rating) + new string('☆', 5 - rating);
 
-            MessageBox.Show($"{guest.Name} さんのレビュー\n評価：{stars}\nコメント：{comment}", "レビュー内容");
+            string review = $"評価：{stars}\nコメント：{comment}";
+
+            // レビューを保存
+            reviewData[guest] = review;
+
+            // 入力直後にも表示
+            MessageBox.Show($"{guest.Name} さんのレビュー\n{review}", "レビュー内容");
+        }
+
+        // レビュー確認ボタンの処理
+        private void ReviewButton_Click(object sender, EventArgs e)
+        {
+            if (reviewData.Count == 0)
+            {
+                MessageBox.Show("レビューはまだ登録されていません。");
+                return;
+            }
+
+            string allReviews = "登録済みレビュー一覧\n\n";
+
+            foreach (var item in reviewData)
+            {
+                Guest guest = item.Key;
+                string review = item.Value;
+
+                allReviews += $"● {guest.Name} さんのレビュー\n{review}\n\n";
+            }
+
+            MessageBox.Show(allReviews, "レビュー一覧");
         }
     }
 }
