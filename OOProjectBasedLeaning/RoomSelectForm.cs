@@ -14,8 +14,6 @@ namespace OOProjectBasedLeaning
     {
         public Room SelectedRoom { get; private set; }
 
-
-
         public RoomSelectForm(List<Room> availableRooms, List<Room> reservedRooms)
         {
             InitializeComponent();
@@ -32,7 +30,7 @@ namespace OOProjectBasedLeaning
             };
 
             var filteredRooms = availableRooms
-            .Where(room => !reservedRooms.Contains(room) && !room.IsCheckedIn)
+            .Where(room => !reservedRooms.Contains(room))
             .ToList();
 
 

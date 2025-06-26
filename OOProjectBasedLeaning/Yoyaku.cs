@@ -15,6 +15,8 @@ namespace OOProjectBasedLeaning
         int panelCount = 1;
 
         public DateTime? ReservationCompletedTime { get; private set; }
+
+        private Dictionary<Guest, Room> guestRoomMap = new();
         public yoyaku()
         {
             this.Text = "—\–ñŠÇ—";
@@ -57,7 +59,12 @@ namespace OOProjectBasedLeaning
                 if (isAlreadyOnThisForm)
                 {
                     panelCount = 0;
-                    MessageBox.Show(guest.Name + "‚³‚ñ‚ÍŠù‚É—\–ñÏ‚İ‚Å‚·B\n—\–ñŠ®—¹“úF" + UpdateTimeLabel(), 
+
+                    string reservedRoomNumber = guestRoomMap.TryGetValue(guest, out var room)
+                    ? room.RoomNumber.ToString()
+                    : "•s–¾";
+
+                    MessageBox.Show(guest.Name + "‚³‚ñ‚ÍŠù‚É—\–ñÏ‚İ‚Å‚·B\n—\–ñŠ®—¹“úF" + UpdateTimeLabel() + "\n—\–ñ•”‰®”Ô†F" + reservedRoomNumber,
                         "—\–ñd•¡ƒGƒ‰[",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
@@ -79,6 +86,8 @@ namespace OOProjectBasedLeaning
 
                             try
                             {
+                                guestRoomMap[guest] = selectRoom;
+                                reservedRooms.Add(selectRoom);
                                 MessageBox.Show(guest.Name + "‚³‚ñ‚Ì—\–ñ‚ªŠ®—¹‚µ‚Ü‚µ‚½B\n—\–ñŠ®—¹“úF" + UpdateTimeLabel() + "\n—\–ñ‚³‚ê‚½•”‰®”Ô†F" + selectRoom.RoomNumber);
                             }
                             catch (Exception ex)
