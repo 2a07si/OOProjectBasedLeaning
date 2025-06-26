@@ -32,11 +32,26 @@ namespace OOProjectBasedLeaning
             {
                 Location = new Point(5, 25),
                 Size = new Size(180, 30),
-                FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = true,
+                //Padding = new Padding(0),
+                //Margin = new Padding(0),
                 Anchor = AnchorStyles.Left | AnchorStyles.Top
             };
-            Controls.Add(iconPanel);
+            this.Controls.Add(iconPanel);
+
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    var panel = new Panel
+            //    {
+            //        Size = new Size(160, 40),
+            //        BackColor = Color.LightBlue,
+            //        Margin = new Padding(0, 0, 0, 10) // 下に隙間
+            //    };
+
+            //    iconPanel.Controls.Add(panel);
+            //}
+
 
             RefreshIcons();
 

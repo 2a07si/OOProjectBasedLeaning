@@ -22,9 +22,7 @@ namespace OOProjectBasedLeaning
             this.Text = "ó\ñÒä«óù";
             this.Size = new Size(800, 600);
 
-            new GuestCreatorForm().Show();
-            new HomeForm().Show();
-            new HotelForm().Show();
+           
 
             reservedRooms = new List<Room>();
             allRooms = new List<Room>
@@ -52,7 +50,9 @@ namespace OOProjectBasedLeaning
             {
                 bool isAlreadyOnThisForm = this.Controls.Contains(guestPanel);
 
-                guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+               guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+
+
 
                 Guest guest = guestPanel.GetGuest();
 
