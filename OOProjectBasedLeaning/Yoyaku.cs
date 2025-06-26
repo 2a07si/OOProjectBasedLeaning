@@ -6,6 +6,10 @@ namespace OOProjectBasedLeaning
 {
     public partial class yoyaku : DragDropForm
     {
+        private List<Room> allRooms;
+        private List<Room> reservedRooms;
+        private List<Room> availableRooms;
+
         int panelCount = 1;
         public DateTime? ReservationCompletedTime { get; private set; }
         public yoyaku()
@@ -16,6 +20,18 @@ namespace OOProjectBasedLeaning
             new GuestCreatorForm().Show();
             new HomeForm().Show();
             new HotelForm().Show();
+
+            reservedRooms = new List<Room>();
+            allRooms = new List<Room>
+            {
+                new RegularRoom(501, 15000), new RegularRoom(502, 15000), new RegularRoom(503, 12000),
+                new RegularRoom(601, 16000), new RegularRoom(602, 16000), new RegularRoom(603, 15000),
+                new RegularRoom(701, 17000), new RegularRoom(702, 17000), new RegularRoom(703, 16000),
+                new RegularRoom(801, 18000), new RegularRoom(802, 18000),
+                new SuiteRoom  (1001, 360000), new SuiteRoom  (1002, 300000),
+            };
+            UpdateAvailableRooms();
+
         }
 
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
@@ -45,13 +61,30 @@ namespace OOProjectBasedLeaning
                 else
                 {
                     panelCount++;
-                    try
+
+                    var selectForm = new RoomSelectForm(availableRooms);
+                    if (selectForm.ShowDialog() == DialogResult.OK)
                     {
-                        MessageBox.Show(guest.Name + "‚³‚ñ‚Ì—\–ñ‚ªŠ®—¹‚µ‚Ü‚µ‚½B\n—\–ñŠ®—¹“úŽžF" + UpdateTimeLabel());
+                        Room selectRoom = selectForm.SelectedRoom;
+
+                        if (selectRoom != null)
+                        {
+                            reservedRooms.Add(selectRoom);
+                            UpdateAvailableRooms();
+
+                            try
+                            {
+                                MessageBox.Show(guest.Name + "‚³‚ñ‚Ì—\–ñ‚ªŠ®—¹‚µ‚Ü‚µ‚½B\n—\–ñŠ®—¹“úŽžF" + UpdateTimeLabel() + "\n—\–ñ‚³‚ê‚½•”‰®”Ô†F" + selectRoom.RoomNumber);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(guest.Name + "‚³‚ñ‚Ì—\–ñ‚ÉŽ¸”s‚µ‚Ü‚µ‚½B" + ex.Message);
+                            }
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        MessageBox.Show(guest.Name + "‚³‚ñ‚Ì—\–ñ‚ÉŽ¸”s‚µ‚Ü‚µ‚½B" + ex.Message);
+                        MessageBox.Show("•”‰®‚Ì‘I‘ð‚ªƒLƒƒƒ“ƒZƒ‹‚³‚ê‚Ü‚µ‚½B");
                     }
                 }
                
@@ -70,6 +103,12 @@ namespace OOProjectBasedLeaning
                 date = ReservationCompletedTime.Value.ToString("yyyy”NMMŒŽdd“ú HH:mm:ss");
             }
             return date;
+        }
+        private void UpdateAvailableRooms()
+        {
+            availableRooms = allRooms
+                .Where(room => !reservedRooms.Any(r => r.RoomNumber == room.RoomNumber))
+                .ToList();
         }
     }
 }

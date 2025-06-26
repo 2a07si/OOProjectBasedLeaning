@@ -9,8 +9,15 @@ namespace OOProjectBasedLeaning
     {
         // 部屋番号
         private readonly int number;
+        public int RoomNumber => number;
         // 基本料金
         private readonly int price;
+
+        public override string ToString()
+        {
+            return $"部屋 {RoomNumber}";
+        }
+
         // この部屋に滞在中のゲストリスト
         private readonly List<Guest> guests = new();
 
