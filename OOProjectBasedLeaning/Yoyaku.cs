@@ -123,6 +123,10 @@ namespace OOProjectBasedLeaning
                     else
                     {
                         MessageBox.Show("部屋の選択がキャンセルされました。");
+                        if (reservedRoomNumber == "不明")
+                        {
+                            guestPanel.BackColor = Color.Yellow;
+                        }
                     }
                 }
                
