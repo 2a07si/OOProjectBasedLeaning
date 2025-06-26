@@ -8,7 +8,7 @@ namespace OOProjectBasedLeaning
     public partial class HotelForm : DragDropForm
     {
         // ホテルロジック
-        private readonly Hotel hotel = new Hotel();
+        private readonly Hotel hotel = Hotel.Instance;
         // GroupBox ↔ Room の対応マップ
         private readonly Dictionary<GroupBox, Room> roomBoxes = new();
 
@@ -61,6 +61,8 @@ namespace OOProjectBasedLeaning
                 e.Effect = DragDropEffects.Move;
             else
                 e.Effect = DragDropEffects.None;
+
+
         }
 
         // チェックアウト処理
@@ -112,6 +114,18 @@ namespace OOProjectBasedLeaning
                 MessageBox.Show(
                     $"{guest.Name} さんは既にこの部屋にいます。",
                     "チェックイン重複",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                return;
+            }
+
+            // 予約済みチェック
+            if (hotel.IsReserved(newRoom))
+            {
+                MessageBox.Show(
+                    $"{guest.Name} さんはこの部屋を予約済みです。\nチェックインできません。",
+                    "予約エラー",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
                 );
