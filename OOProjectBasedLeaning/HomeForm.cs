@@ -15,9 +15,6 @@ namespace OOProjectBasedLeaning
         // ゲストパネル表示用パネル
         private FlowLayoutPanel guestPanelArea;
 
-        // チェックアウト履歴表示用パネル
-        private FlowLayoutPanel flow;
-
         // レビュー保存用辞書
         private Dictionary<Guest, string> reviewData = new();
 
@@ -37,15 +34,6 @@ namespace OOProjectBasedLeaning
                 WrapContents = false
             };
             Controls.Add(guestPanelArea);
-
-            // チェックアウト履歴表示エリア
-            flow = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Right,
-                Width = 300,
-                AutoScroll = true
-            };
-            Controls.Add(flow);
 
             // レビュー確認ボタン
             Button reviewButton = new Button
@@ -93,28 +81,6 @@ namespace OOProjectBasedLeaning
                         {
                             guestPanelArea.Controls.Add(guestPanel);
                         }
-
-                        // チェックアウト履歴ラベル作成
-                        Label checkoutLabel = new Label
-                        {
-                            AutoSize = true,
-                            Cursor = Cursors.Hand
-                        };
-
-                        // 履歴クリック時のレビュー表示イベント
-                        checkoutLabel.Click += (sender, args) =>
-                        {
-                            if (reviewData.ContainsKey(guest))
-                            {
-                                MessageBox.Show($"{guest.Name} さんのレビュー\n{reviewData[guest]}", "レビュー内容");
-                            }
-                            else
-                            {
-                                MessageBox.Show("レビューは未登録です。");
-                            }
-                        };
-
-                        flow.Controls.Add(checkoutLabel);
 
                         // レビュー入力処理
                         CreateReview(guest);
