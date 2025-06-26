@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -6,10 +7,10 @@ namespace OOProjectBasedLeaning
 {
     public partial class HomeForm : DragDropForm
     {
-        public DateTime? ReservationCompletedTime { get; private set; }
-
         private Hotel hotel = new Hotel();
-        private bool isCheckedOut = false;
+
+        // パネルごとにチェックアウト時間を管理
+        private readonly Dictionary<GuestPanel, DateTime> checkoutTime = new();
 
         public HomeForm()
         {
@@ -31,9 +32,10 @@ namespace OOProjectBasedLeaning
                 guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
                 Guest guest = guestPanel.GetGuest();
 
-                if (isAlreadyOnThisForm || isCheckedOut)
+                // パネル単位でチェックアウト済みか確認
+                if (checkoutTime.ContainsKey(guestPanel))
                 {
-                    MessageBox.Show($"{guest.Name} さんは既にチェックアウト済みです。\nチェックアウト完了日時：{ReservationCompletedTime?.ToString("yyyy年MM月dd日 HH:mm:ss")}",
+                    MessageBox.Show($"{guest.Name} さんは既にチェックアウト済みです。\nチェックアウト完了日時：{checkoutTime[guestPanel]:yyyy年MM月dd日 HH:mm:ss}",
                         "チェックアウト重複エラー",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
@@ -44,10 +46,12 @@ namespace OOProjectBasedLeaning
                     try
                     {
                         hotel.CheckOut(guest);
-                        isCheckedOut = true;
-                        ReservationCompletedTime = DateTime.Now;
+                        DateTime completedTime = DateTime.Now;
 
-                        MessageBox.Show($"{guest.Name} さんがホテルからチェックアウトしました。\nチェックアウト完了日時：{ReservationCompletedTime?.ToString("yyyy年MM月dd日 HH:mm:ss")}");
+                        // パネルのチェックアウト完了時間を登録
+                        checkoutTime[guestPanel] = completedTime;
+
+                        MessageBox.Show($"{guest.Name} さん（このパネル）がホテルからチェックアウトしました。\nチェックアウト完了日時：{completedTime:yyyy年MM月dd日 HH:mm:ss}");
 
                         CreateReview(guest);
                     }
