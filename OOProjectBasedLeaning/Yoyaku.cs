@@ -12,6 +12,8 @@ namespace OOProjectBasedLeaning
         private List<Room> reservedRooms;
         private List<Room> availableRooms;
 
+        private Hotel hotel = Hotel.Instance;
+
         int panelCount = 1;
 
         public DateTime? ReservationCompletedTime { get; private set; }
