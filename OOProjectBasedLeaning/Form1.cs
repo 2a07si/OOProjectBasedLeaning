@@ -24,7 +24,7 @@ namespace OOProjectBasedLeaning
             var hotelForm = new HotelForm()
             {
                 StartPosition = FormStartPosition.Manual,
-                Location = new Point(-15, 0)
+                Location = new Point(-5, 0)
             };
             hotelForm.Show();
 
@@ -34,17 +34,17 @@ namespace OOProjectBasedLeaning
                 Location = new Point(1348, 427)
             };
             guestForm.Show();
-            var yoyakuForm = new yoyaku()
+            var yoyakuForm = new YoyakuForm()
             {
                 StartPosition = FormStartPosition.Manual,
-                Location = new Point(450, 427)
+                Location = new Point(630, 427)
             };
             yoyakuForm.Show();
 
             var homeForm = new HomeForm()
             {
                 StartPosition = FormStartPosition.Manual,
-                Location = new Point(0, 427)
+                Location = new Point(-5, 427)
             };
             homeForm.Show();
             this.Hide();

@@ -251,7 +251,7 @@
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.OldLace;
-            ClientSize = new Size(1914, 382);
+            ClientSize = new Size(1910, 382);
             Controls.Add(gbx_10);
             Controls.Add(gbx_8);
             Controls.Add(gbx_7);

@@ -160,16 +160,5 @@ namespace OOProjectBasedLeaning
         private Guest CreateGuest(string guestName) => new GuestModel(guestName);
         private Guest CreateMember() => new MemberModel("Member");
 
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData) // ショートカットキー
-        {
-            // F12キーを押した時
-            if (keyData == Keys.F12)
-            {
-                Application.Exit(); // プログラム終了
-                return true;
-            }
-            return base.ProcessCmdKey(ref msg, keyData);
-        }
-
     }
 }

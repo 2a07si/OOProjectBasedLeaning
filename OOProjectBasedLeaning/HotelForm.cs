@@ -1,31 +1,63 @@
-﻿using System;
+﻿// HotelForm.cs
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace OOProjectBasedLeaning
 {
     public partial class HotelForm : DragDropForm
     {
-        // ホテルロジック
         private readonly Hotel hotel = Hotel.Instance;
-        // GroupBox ↔ Room の対応マップ
         private readonly Dictionary<GroupBox, Room> roomBoxes = new();
+
+
+        private System.Windows.Forms.Timer clockTimer;
+        private Label clockLabel;
 
         public HotelForm()
         {
             InitializeComponent();
             InitializeRoomBoxes();
+
+            InitializeClock();
+
+            hotel.ReservationAdded += OnReservationAdded;
+            hotel.CheckedIn += OnHotelCheckedIn;
+            hotel.CheckedOut += OnHotelCheckedOut;
+            hotel.OperationFailed += OnHotelOperationFailed;
+
+            foreach (var res in hotel.GetAllReservations())
+                OnReservationAdded(res);
         }
 
-        // フォーム直下へのドラッグは無効化
+        // 時計
+        private void InitializeClock()
+        {
+            clockLabel = new Label
+            {
+                Name = "lblClock",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(this.ClientSize.Width - 100, 70),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            Controls.Add(clockLabel);
+
+            clockTimer = new System.Windows.Forms.Timer { Interval = 1000 };
+            clockTimer.Tick += (s, e) =>
+            {
+                clockLabel.Text = DateTime.Now.ToString("HH:mm:ss");
+            };
+            clockTimer.Start();
+
+            clockLabel.Text = DateTime.Now.ToString("HH:mm:ss");
+        }
+
         protected override void OnFormDragEnterSerializable(DragEventArgs e) => e.Effect = DragDropEffects.None;
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e) { }
 
-        /// <summary>
-        /// 各号室 GroupBox に対応する Room をマッピングし、
-        /// 初期色設定と DragDrop ハンドラを登録
-        /// </summary>
         private void InitializeRoomBoxes()
         {
             var boxes = new[]
@@ -39,13 +71,12 @@ namespace OOProjectBasedLeaning
 
             foreach (var gbx in boxes)
             {
-                int num = int.Parse(gbx.Text.Replace("号室", ""));
-                var room = hotel.GetRoomByNumber(num);
+                int roomNumber = int.Parse(gbx.Text.Replace("号室", ""));
+                var room = hotel.GetRoomByNumber(roomNumber);
 
                 roomBoxes[gbx] = room;
                 UpdateRoomColor(gbx, room);
 
-                // ドラッグの許可とイベント登録
                 gbx.AllowDrop = true;
                 gbx.DragEnter += RoomBox_DragEnterOrOver;
                 gbx.DragOver += RoomBox_DragEnterOrOver;
@@ -56,153 +87,149 @@ namespace OOProjectBasedLeaning
 
         private void RoomBox_DragEnterOrOver(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.Serializable)
-                && e.Data.GetData(DataFormats.Serializable) is GuestPanel)
-                e.Effect = DragDropEffects.Move;
-            else
-                e.Effect = DragDropEffects.None;
-
-
+            e.Effect = (e.Data.GetDataPresent(DataFormats.Serializable) &&
+                        e.Data.GetData(DataFormats.Serializable) is GuestPanel)
+                       ? DragDropEffects.Move
+                       : DragDropEffects.None;
         }
 
-        // チェックアウト処理
         private void RoomBox_ControlRemoved(object sender, ControlEventArgs e)
         {
-            if (e.Control is GuestPanel gp)
+            if (e.Control is GuestPanel gp && sender is GroupBox gbx)
             {
-                var gbx = (GroupBox)sender;
-                var room = roomBoxes[gbx];
                 var guest = gp.GetGuest();
-
+                var room = roomBoxes[gbx];
                 if (hotel.IsOccupied(room))
-                {
                     hotel.CheckOut(guest);
-                    UpdateRoomColor(gbx, room);
-                }
             }
         }
 
-        /// <summary>
-        /// ドロップ時のチェックイン処理 → UI 移動 → 色更新／メッセージ表示
-        /// </summary>
         private void RoomBox_DragDrop(object sender, DragEventArgs e)
         {
-            if (!e.Data.GetDataPresent(DataFormats.Serializable) ||
-                !(e.Data.GetData(DataFormats.Serializable) is GuestPanel gp))
+            if (!(e.Data.GetDataPresent(DataFormats.Serializable) &&
+                  e.Data.GetData(DataFormats.Serializable) is GuestPanel gp))
                 return;
+
+            // Room→Room の直接移動は禁止
+            var oldBox = gp.Parent as GroupBox;
+            if (oldBox != null)
+            {
+                MessageBox.Show(
+                    "部屋から部屋への直接移動はできません。\n一度チェックアウトしてから再度チェックインしてください。",
+                    "移動不可",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                return;
+            }
 
             var newBox = (GroupBox)sender;
-            var newRoom = roomBoxes[newBox];
             var guest = gp.GetGuest();
+            var roomNumber = roomBoxes[newBox].Number;
 
-            var oldBox = gp.Parent as GroupBox;
-            if (oldBox != null && oldBox != newBox)
-            {
-                MessageBox.Show(
-                    "部屋間の直接移動はできません。\n" +
-                    "一度ホテルからチェックアウトしてください",
-                    "操作エラー",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return;
-            }
-
-            // 重複チェック
-            if (newBox.Controls.Contains(gp))
-            {
-                MessageBox.Show(
-                    $"{guest.Name} さんは既にこの部屋にいます。",
-                    "チェックイン重複",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return;
-            }
-
-            // 予約済みチェック
-            if (hotel.IsReserved(newRoom))
-            {
-                MessageBox.Show(
-                    $"{guest.Name} さんはこの部屋を予約済みです。\nチェックインできません。",
-                    "予約エラー",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return;
-            }
-
-            // 旧部屋チェックアウト
-            Room oldRoom = null;
-            if (oldBox != null)
-                roomBoxes.TryGetValue(oldBox, out oldRoom);
-            if (oldRoom != null)
-                hotel.CheckOut(guest);
-
-            // 新部屋チェックイン試行
             try
             {
-                hotel.CheckIn(newRoom.Number, guest);
+                hotel.CheckIn(roomNumber, guest);
+                MoveGuestPanelTo(gp, newBox);
             }
-            catch (Exception ex)
+            catch
             {
-                // 失敗したらロールバック：旧ルームに再チェックイン
-                if (oldRoom != null)
-                    hotel.CheckIn(oldRoom.Number, guest);
+                // エラーは OperationFailed イベントで表示
+            }
+        }
 
-                MessageBox.Show(
-                    $"チェックインに失敗しました: {ex.Message}",
-                    "エラー",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
+        private void OnReservationAdded(Reservation res)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => OnReservationAdded(res)));
                 return;
             }
 
-            // UI 移動 → 色更新 → メッセージ
-            if (oldBox != null)
+            var gbx = roomBoxes.First(kv => kv.Value == res.Room).Key;
+            var lbl = new Label
             {
-                oldBox.Controls.Remove(gp);
-                UpdateRoomColor(oldBox, oldRoom);
-            }
-            else
+                Text = $"予約: {res.Guest.Name}",
+                AutoSize = true,
+                Location = new Point(10, 20)
+            };
+            gbx.Controls.Add(lbl);
+            UpdateRoomColor(gbx, res.Room);
+        }
+
+        private void OnHotelCheckedIn(object? sender, HotelEventArgs e)
+        {
+            if (InvokeRequired)
             {
-                gp.Parent?.Controls.Remove(gp);
+                Invoke(new Action(() => OnHotelCheckedIn(sender, e)));
+                return;
             }
 
-            newBox.Controls.Add(gp);
-            gp.Location = new Point(10, 20);
-            gp.BringToFront();
-            UpdateRoomColor(newBox, newRoom);
-
+            var gbx = roomBoxes.First(kv => kv.Value == e.Room).Key;
+            UpdateRoomColor(gbx, e.Room);
             MessageBox.Show(
-                $"{guest.Name} さんを {newRoom.Number}号室 にチェックインしました。",
+                $"{e.Guest.Name} さんを {e.Room.Number}号室 にチェックインしました。\n日時：{e.Timestamp:yyyy/MM/dd HH:mm:ss}",
                 "チェックイン完了",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
             );
         }
 
-        // 部屋の状態に応じて GroupBox の背景色を変更
-        private void UpdateRoomColor(GroupBox gbx, Room room)
+        private void OnHotelCheckedOut(object? sender, HotelEventArgs e)
         {
-            if (hotel.IsOccupied(room))
-                gbx.BackColor = Color.LightCoral;   // 使用中
-            else if (hotel.IsReserved(room))
-                gbx.BackColor = Color.LightBlue;    // 予約済
-            else
-                gbx.BackColor = Color.LightGreen;   // 空室
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => OnHotelCheckedOut(sender, e)));
+                return;
+            }
+
+            var gbx = roomBoxes.First(kv => kv.Value == e.Room).Key;
+
+            // 予約ラベルを消去
+            var toRemove = gbx.Controls
+                             .OfType<Label>()
+                             .Where(l => l.Text.StartsWith("予約:"))
+                             .ToList();
+            toRemove.ForEach(lbl => gbx.Controls.Remove(lbl));
+
+            UpdateRoomColor(gbx, e.Room);
+            MessageBox.Show(
+                $"{e.Guest.Name} さんを {e.Room.Number}号室 からチェックアウトしました。\n日時：{e.Timestamp:yyyy/MM/dd HH:mm:ss}",
+                "チェックアウト完了",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
         }
 
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData) // ショートカットキー
+        private void OnHotelOperationFailed(object? sender, HotelErrorEventArgs e)
         {
-            // F12キーを押した時
-            if (keyData == Keys.F12)
+            if (InvokeRequired)
             {
-                Application.Exit(); // プログラム終了
-                return true;
+                Invoke(new Action(() => OnHotelOperationFailed(sender, e)));
+                return;
             }
-            return base.ProcessCmdKey(ref msg, keyData);
+
+            MessageBox.Show(
+                $"操作に失敗しました：\n{e.ErrorMessage}",
+                "エラー",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+
+        private void MoveGuestPanelTo(GuestPanel gp, GroupBox targetBox)
+        {
+            gp.Parent?.Controls.Remove(gp);
+            targetBox.Controls.Add(gp);
+            gp.Location = new Point(10, 20);
+            gp.BringToFront();
+        }
+
+        private void UpdateRoomColor(GroupBox gbx, Room room)
+        {
+            if (hotel.IsOccupied(room)) gbx.BackColor = Color.LightCoral;
+            else if (hotel.IsReserved(room)) gbx.BackColor = Color.LightBlue;
+            else gbx.BackColor = Color.LightGreen;
         }
     }
 }

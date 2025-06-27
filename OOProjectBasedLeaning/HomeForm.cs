@@ -1,4 +1,5 @@
-﻿using System;
+﻿// HomeForm.cs
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -7,16 +8,13 @@ namespace OOProjectBasedLeaning
 {
     public partial class HomeForm : DragDropForm
     {
-        private Hotel hotel = Hotel.Instance;
+        private readonly Hotel hotel = Hotel.Instance;
 
-        // パネルごとにチェックアウト時間を管理
-        private readonly Dictionary<GuestPanel, DateTime> checkoutTime = new();
+        // ゲストパネル表示用エリア
+        private readonly FlowLayoutPanel guestPanelArea;
 
-        // ゲストパネル表示用パネル
-        private FlowLayoutPanel guestPanelArea;
-
-        // レビュー保存用辞書
-        private Dictionary<Guest, string> reviewData = new();
+        // ゲストごとのレビュー保存辞書
+        private readonly Dictionary<Guest, string> reviewData = new();
 
         public HomeForm()
         {
@@ -24,7 +22,7 @@ namespace OOProjectBasedLeaning
             Size = new Size(650, 500);
             BackColor = Color.White;
 
-            // ゲストパネル表示エリア
+            // ゲストパネル表示エリアのセットアップ
             guestPanelArea = new FlowLayoutPanel
             {
                 Dock = DockStyle.Left,
@@ -36,7 +34,7 @@ namespace OOProjectBasedLeaning
             Controls.Add(guestPanelArea);
 
             // レビュー確認ボタン
-            Button reviewButton = new Button
+            var reviewButton = new Button
             {
                 Text = "レビュー確認",
                 Size = new Size(120, 40),
@@ -46,76 +44,79 @@ namespace OOProjectBasedLeaning
             Controls.Add(reviewButton);
         }
 
+        // HomeForm へのドラッグ許可
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
         {
             e.Effect = DragDropEffects.Move;
         }
 
+        // HomeForm へドロップされたときの処理
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
-            if (obj is GuestPanel guestPanel)
+            if (!(obj is GuestPanel guestPanel))
+                return;
+
+            var guest = guestPanel.GetGuest();
+
+            // すでに HomeForm 内にいる場合は何もしない
+            if (guestPanelArea.Controls.Contains(guestPanel))
             {
-                Guest guest = guestPanel.GetGuest();
-
-                if (checkoutTime.ContainsKey(guestPanel))
-                {
-                    MessageBox.Show($"{guest.Name} さんは既にチェックアウト済みです。\nチェックアウト完了日時：{checkoutTime[guestPanel]:yyyy年MM月dd日 HH:mm:ss}",
-                        "チェックアウト重複エラー",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    e.Effect = DragDropEffects.None;
-                }
-                else
-                {
-                    try
-                    {
-                        hotel.CheckOut(guest);
-                        DateTime completedTime = DateTime.Now;
-
-                        checkoutTime[guestPanel] = completedTime;
-
-                        MessageBox.Show($"{guest.Name} さんがホテルからチェックアウトしました。\nチェックアウト完了日時：{completedTime:yyyy年MM月dd日 HH:mm:ss}");
-
-                        // ゲストパネルを表示エリアに追加
-                        if (!guestPanelArea.Controls.Contains(guestPanel))
-                        {
-                            guestPanelArea.Controls.Add(guestPanel);
-                        }
-
-                        // レビュー入力処理
-                        CreateReview(guest);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"チェックアウトに失敗しました: {ex.Message}");
-                    }
-                }
+                MessageBox.Show(
+                    $"{guest.Name} さんのパネルはすでにホームにあります。",
+                    "操作無効",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+                return;
             }
+
+            // 過去のレビューがあればクリアして上書き可能にする(これは辞めたい)
+            if (reviewData.ContainsKey(guest))
+                reviewData.Remove(guest);
+
+            var oldParent = guestPanel.Parent;
+            if (oldParent != null)
+                oldParent.Controls.Remove(guestPanel);
+
+            guestPanelArea.Controls.Add(guestPanel);
+
+            // レビュー作成
+            CreateReview(guest);
         }
 
+        // レビュー入力ダイアログ
         private void CreateReview(Guest guest)
         {
-            int rating = 0;
+            int rating;
             while (true)
             {
-                string input = Microsoft.VisualBasic.Interaction.InputBox("1〜5の評価を入力してください。（☆の数）", "レビュー評価", "5");
+                string input = Microsoft.VisualBasic.Interaction.InputBox(
+                    "1〜5の評価を入力してください。（☆の数）",
+                    "レビュー評価",
+                    "5"
+                );
                 if (int.TryParse(input, out rating) && rating >= 1 && rating <= 5)
-                {
                     break;
-                }
                 MessageBox.Show("1〜5の数字で入力してください。");
             }
 
-            string comment = Microsoft.VisualBasic.Interaction.InputBox("コメントを入力してください。", "レビューコメント", "");
+            string comment = Microsoft.VisualBasic.Interaction.InputBox(
+                "コメントを入力してください。",
+                "レビューコメント",
+                ""
+            );
             string stars = new string('★', rating) + new string('☆', 5 - rating);
-
             string review = $"評価：{stars}\nコメント：{comment}";
 
-            // レビューを保存
+            // 辞書に保存（上書き）
             reviewData[guest] = review;
 
-            // 入力直後にも表示
-            MessageBox.Show($"{guest.Name} さんのレビュー\n{review}", "レビュー内容");
+            MessageBox.Show(
+                $"{guest.Name} さんのレビュー\n{review}",
+                "レビュー内容",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
         }
 
         // レビュー確認ボタンの処理
@@ -127,14 +128,10 @@ namespace OOProjectBasedLeaning
                 return;
             }
 
-            string allReviews = "登録済みレビュー一覧\n\n";
-
-            foreach (var item in reviewData)
+            var allReviews = "登録済みレビュー一覧\n\n";
+            foreach (var kv in reviewData)
             {
-                Guest guest = item.Key;
-                string review = item.Value;
-
-                allReviews += $"● {guest.Name} さんのレビュー\n{review}\n\n";
+                allReviews += $"● {kv.Key.Name} さんのレビュー\n{kv.Value}\n\n";
             }
 
             MessageBox.Show(allReviews, "レビュー一覧");

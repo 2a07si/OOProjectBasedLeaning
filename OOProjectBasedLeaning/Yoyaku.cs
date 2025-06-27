@@ -1,158 +1,115 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
-using OOProjectBasedLeaning;
-
 
 namespace OOProjectBasedLeaning
 {
-    public partial class yoyaku : DragDropForm
+    /// <summary>
+    /// 予約管理フォーム (YoyakuForm)
+    /// Hotel クラスに情報を集約し、ローカル状態を排除
+    /// </summary>
+    public partial class YoyakuForm : DragDropForm
     {
-        private List<Room> allRooms;
-        private List<Room> reservedRooms;
-        private List<Room> availableRooms;
+        // シングルトン経由でホテル情報を一元管理
+        private readonly Hotel hotel = Hotel.Instance;
 
-        private Hotel hotel = Hotel.Instance;
+        // 予約完了日時記録
+        private DateTime? reservationCompletedTime;
 
-        int panelCount = 1;
-
-        public DateTime? ReservationCompletedTime { get; private set; }
-
-        private Dictionary<Guest, Room> guestRoomMap = new();
-        private Guest guestLeader;
-
-        public yoyaku()
+        public YoyakuForm()
         {
-            this.Text = "予約管理";
-            this.Size = new Size(800, 600);
-
-           
-
-            reservedRooms = new List<Room>();
-            allRooms = new List<Room>
-            {
-                new RegularRoom(501, 15000), new RegularRoom(502, 15000), new RegularRoom(503, 12000),
-                new RegularRoom(601, 16000), new RegularRoom(602, 16000), new RegularRoom(603, 15000),
-                new RegularRoom(701, 17000), new RegularRoom(702, 17000), new RegularRoom(703, 16000),
-                new RegularRoom(801, 18000), new RegularRoom(802, 18000),
-                new SuiteRoom  (1001, 360000), new SuiteRoom  (1002, 300000),
-            };
-            UpdateAvailableRooms();
-
+            Text = "予約管理";
+            Size = new Size(735, 600);
         }
 
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
         {
-            e.Effect = DragDropEffects.Move;
+            // ドラッグ可能と判断
+            e.Effect = e.Data.GetDataPresent(DataFormats.Serializable)
+                && e.Data.GetData(DataFormats.Serializable) is GuestPanel
+                ? DragDropEffects.Move
+                : DragDropEffects.None;
         }
 
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
-            var roomForm = new RoomSelectForm(allRooms, reservedRooms, guestLeader);
+            if (!(obj is GuestPanel guestPanel))
+                return;
 
-            if (obj is GuestPanel guestPanel)
+            // 重複ドラッグ防止
+            if (Controls.Contains(guestPanel))
             {
-                Guest guest = guestPanel.GetGuest();
-
-                bool isAlreadyOnThisForm = this.Controls.Contains(guestPanel);
-
-               guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
-
-                string reservedRoomNumber = guestRoomMap.TryGetValue(guest, out var room)
-                  ? room.RoomNumber.ToString()
-                  : "不明";
-
-            if (isAlreadyOnThisForm)
-                {
-                    panelCount = 0;
-
-                    MessageBox.Show(guest.Name + "さんは既に予約済みです。\n予約完了日時：" + UpdateTimeLabel() + "\n予約部屋番号：" + reservedRoomNumber,
-                        "予約重複エラー",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    e.Effect = DragDropEffects.None;
-                }
-                else
-                {
-                    panelCount++;
-
-                    var selectForm = new RoomSelectForm(availableRooms, reservedRooms, guestLeader);
-
-                    if (selectForm.ShowDialog() == DialogResult.OK)
-                    {
-                        try
-                        {
-                            Room selectRoom = selectForm.SelectedRoom;
-
-                            if (selectRoom == null)
-                                throw new InvalidOperationException("部屋が選択されていません。");
-
-                            // 予約処理（内部でVIP/会員判定も行われる）
-                            var guests = new List<Guest> { guest };
-
-                            if (guest.Companions is List<Guest> companions)
-                            {
-                                guests.AddRange(companions);
-                            }
-
-                            selectRoom.AddGuests(guests);
-
-                            guestRoomMap[guest] = selectRoom;
-                            reservedRooms.Add(selectRoom);
-                            UpdateAvailableRooms();
-
-                            MessageBox.Show(
-                                $"{guest.Name}さんの予約が完了しました。\n" +
-                                $"予約完了日時：{UpdateTimeLabel()}\n" +
-                                $"予約された部屋番号：{selectRoom.RoomNumber}"
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(
-                                $"{guest.Name}さんの予約に失敗しました：\n{ex.Message}",
-                                "予約エラー",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning
-                            );
-                            if (reservedRoomNumber == "不明")
-                            {
-                                guestPanel.BackColor = Color.Yellow;
-                            }
-
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("部屋の選択がキャンセルされました。");
-                        if (reservedRoomNumber == "不明")
-                        {
-                            guestPanel.BackColor = Color.Yellow;
-                        }
-                    }
-                }
-               
+                MessageBox.Show(
+                    $"{guestPanel.GetGuest().Name} さんは既に予約済みです。\n" +
+                    $"予約完了日時：{GetReservationTimeString()}",
+                    "予約重複エラー",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                e.Effect = DragDropEffects.None;
+                return;
             }
-        }
-        private string UpdateTimeLabel()
-        {
-            string date;　
-            if (ReservationCompletedTime == null || panelCount!=0)
+
+            // 予約可能／予約済リストを Hotel から取得
+            var availableRooms = hotel.AllRooms.Where(r => hotel.IsVacant(r)).ToList();
+            var reservedRooms = hotel.AllRooms.Where(r => hotel.IsReserved(r)).ToList();
+
+            using var selectForm = new RoomSelectForm(availableRooms, reservedRooms, guestPanel.GetGuest());
+            if (selectForm.ShowDialog() == DialogResult.OK)
             {
-                ReservationCompletedTime = DateTime.Now;
-                date = ReservationCompletedTime.Value.ToString("yyyy年MM月dd日 HH:mm:ss");
+                var selectedRoom = selectForm.SelectedRoom;
+                if (selectedRoom == null)
+                {
+                    MessageBox.Show("部屋が選択されていません。", "予約エラー", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                try
+                {
+                    // Hotel クラスに予約を委譲
+                    var guest = guestPanel.GetGuest();
+                    var now = DateTime.Now;
+                    hotel.Reserve(selectedRoom.Number, guest, now, now);
+
+                    // UI 上にゲストパネルを配置
+                    guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+
+                    reservationCompletedTime = DateTime.Now;
+                    MessageBox.Show(
+                        $"{guestPanel.GetGuest().Name} さんの予約が完了しました。\n" +
+                        $"予約完了日時：{GetReservationTimeString()}\n" +
+                        $"予約部屋番号：{selectedRoom.Number}",
+                        "予約完了",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"{guestPanel.GetGuest().Name} さんの予約に失敗しました：\n{ex.Message}",
+                        "予約エラー",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                }
             }
             else
             {
-                date = ReservationCompletedTime.Value.ToString("yyyy年MM月dd日 HH:mm:ss");
+                MessageBox.Show("部屋の選択がキャンセルされました。", "予約キャンセル", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            return date;
         }
-        private void UpdateAvailableRooms()
+
+        /// <summary>
+        /// 予約完了時刻を文字列で取得
+        /// </summary>
+        private string GetReservationTimeString()
         {
-            availableRooms = allRooms
-                .Where(room => !reservedRooms.Any(r => r.RoomNumber == room.RoomNumber))
-                .ToList();
+            if (reservationCompletedTime == null)
+                reservationCompletedTime = DateTime.Now;
+            return reservationCompletedTime.Value.ToString("yyyy年MM月dd日 HH:mm:ss");
         }
     }
 }
