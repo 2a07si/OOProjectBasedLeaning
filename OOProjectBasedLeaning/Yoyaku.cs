@@ -6,10 +6,6 @@ using System.Windows.Forms;
 
 namespace OOProjectBasedLeaning
 {
-    /// <summary>
-    /// 予約管理フォーム (YoyakuForm)
-    /// Hotel クラスに情報を集約し、ローカル状態を排除
-    /// </summary>
     public partial class YoyakuForm : DragDropForm
     {
         // シングルトン経由でホテル情報を一元管理
