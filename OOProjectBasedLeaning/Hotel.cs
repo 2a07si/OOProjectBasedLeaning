@@ -9,7 +9,7 @@ namespace OOProjectBasedLeaning
     /// </summary>
     public sealed class Hotel
     {
-        // 唯一のインスタンス
+        // シングルトン
         private static readonly Hotel _instance = new Hotel();
         public static Hotel Instance => _instance;
 
@@ -24,27 +24,42 @@ namespace OOProjectBasedLeaning
                 new RegularRoom(801, 18000), new RegularRoom(802, 18000),
                 new SuiteRoom(1001, 360000), new SuiteRoom(1002, 300000),
             };
-            vacantRooms = new List<Room>(allRooms);
-            guestBook = new List<Room>();
-            reservedRooms = new List<Room>();
-            reservations = new List<Reservation>();
+            vacantRooms = new List<Room>(allRooms); // 空き室
+            guestBook = new List<Room>(); // チェックインしている部屋
+            reservedRooms = new List<Room>(); // 予約された部屋
+            reservations = new List<Reservation>(); // 予約された部屋の情報
         }
 
         // 内部データ
         private readonly List<Room> allRooms;
-        private readonly List<Room> vacantRooms;
-        private readonly List<Room> guestBook;
-        private readonly List<Room> reservedRooms;
-        private readonly List<Reservation> reservations;
+        private readonly List<Room> vacantRooms; // 空き室
+        private readonly List<Room> guestBook; // チェックインしている部屋
+        private readonly List<Room> reservedRooms; // 予約された部屋
+        private readonly List<Reservation> reservations; // 予約された部屋の情報
 
         // 外部参照用
         public IReadOnlyList<Room> AllRooms => allRooms;
         public IEnumerable<Reservation> GetAllReservations() => reservations.AsReadOnly();
 
-        // 各種状態判定
-        public bool IsOccupied(Room room) => guestBook.Contains(room);
-        public bool IsReserved(Room room) => reservedRooms.Contains(room);
-        public bool IsVacant(Room room) => !IsOccupied(room) && !IsReserved(room);
+
+        /// <summary>
+        /// その部屋に「チェックイン済み」のゲストが滞在中かどうか
+        /// </summary>
+        public bool IsOccupied(Room room)
+            => guestBook.Contains(room);
+
+        /// <summary>
+        /// その部屋が「予約済み」かどうか
+        /// </summary>
+        public bool IsReserved(Room room)
+            => reservedRooms.Contains(room);
+
+        /// <summary>
+        /// 「空室」状態かどうか
+        /// </summary>
+        public bool IsVacant(Room room)
+            => !IsOccupied(room) && !IsReserved(room);
+
 
         // イベント通知
         public event Action<Reservation>? ReservationAdded;
@@ -59,7 +74,7 @@ namespace OOProjectBasedLeaning
             => allRooms.FirstOrDefault(r => r.Number == number) ?? NullRoom.Instance;
 
         /// <summary>
-        /// 部屋を予約リストに登録します。
+        /// 部屋を予約リストに登録
         /// </summary>
         public void Reserve(int roomNumber, Guest guest, DateTime checkIn, DateTime checkOut)
         {
@@ -78,7 +93,7 @@ namespace OOProjectBasedLeaning
         }
 
         /// <summary>
-        /// 予約を取り消し、空室リストに戻します。
+        /// 予約を取り消し、空室リストに戻す
         /// </summary>
         public void CancelReservation(int roomNumber)
         {
@@ -91,7 +106,7 @@ namespace OOProjectBasedLeaning
         }
 
         /// <summary>
-        /// 自身の予約がある場合のみチェックインを行います。
+        /// 自身の予約がある場合のみチェックイン
         /// </summary>
         public void CheckIn(int roomNumber, Guest leader)
         {
@@ -109,7 +124,6 @@ namespace OOProjectBasedLeaning
                 // 予約情報のクリア
                 reservedRooms.Remove(room);
                 reservations.Remove(myReservation);
-                // vacantRooms は予約時に除去済み
 
                 // 部屋にゲストを追加
                 var group = new List<Guest> { leader };
@@ -131,7 +145,7 @@ namespace OOProjectBasedLeaning
         }
 
         /// <summary>
-        /// チェックアウトを行います。
+        /// チェックアウト
         /// </summary>
         public void CheckOut(Guest leader)
         {

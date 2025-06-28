@@ -12,8 +12,8 @@ namespace OOProjectBasedLeaning
         // ゲストパネル表示用エリア
         private readonly FlowLayoutPanel guestPanelArea;
 
-        // ゲストごとのレビュー保存辞書
-        private readonly Dictionary<Guest, string> reviewData = new();
+        // ゲストごとのレビュー保存辞書（複数レビューを保持）
+        private readonly Dictionary<Guest, List<string>> reviewData = new();
 
         public HomeForm()
         {
@@ -57,27 +57,15 @@ namespace OOProjectBasedLeaning
 
             var guest = guestPanel.GetGuest();
 
-            // すでに HomeForm 内にいる場合は何もしない
-            if (guestPanelArea.Controls.Contains(guestPanel))
+            // 既に HomeForm 内にいなければパネルを追加
+            if (!guestPanelArea.Controls.Contains(guestPanel))
             {
-                MessageBox.Show(
-                    $"{guest.Name} さんのパネルはすでにホームにあります。",
-                    "操作無効",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-                return;
+                var oldParent = guestPanel.Parent;
+                if (oldParent != null)
+                    oldParent.Controls.Remove(guestPanel);
+
+                guestPanelArea.Controls.Add(guestPanel);
             }
-
-            // 過去のレビューがあればクリアして上書き可能にする(これは辞めたい)
-            if (reviewData.ContainsKey(guest))
-                reviewData.Remove(guest);
-
-            var oldParent = guestPanel.Parent;
-            if (oldParent != null)
-                oldParent.Controls.Remove(guestPanel);
-
-            guestPanelArea.Controls.Add(guestPanel);
 
             // レビュー作成
             CreateReview(guest);
@@ -107,18 +95,21 @@ namespace OOProjectBasedLeaning
             string stars = new string('★', rating) + new string('☆', 5 - rating);
             string review = $"評価：{stars}\nコメント：{comment}";
 
-            // 辞書に保存（上書き）
-            reviewData[guest] = review;
+            // 辞書に追加
+            if (!reviewData.ContainsKey(guest))
+                reviewData[guest] = new List<string>();
+            reviewData[guest].Add(review);
 
+            // 完了メッセージ
             MessageBox.Show(
-                $"{guest.Name} さんのレビュー\n{review}",
+                $"{guest.Name} さんのレビューを登録しました。\n{review}",
                 "レビュー内容",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
             );
         }
 
-        // レビュー確認ボタンの処理
+        // 「レビュー確認」ボタン押下時
         private void ReviewButton_Click(object sender, EventArgs e)
         {
             if (reviewData.Count == 0)
@@ -127,13 +118,18 @@ namespace OOProjectBasedLeaning
                 return;
             }
 
-            var allReviews = "登録済みレビュー一覧\n\n";
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("登録済みレビュー一覧\n");
             foreach (var kv in reviewData)
             {
-                allReviews += $"● {kv.Key.Name} さんのレビュー\n{kv.Value}\n\n";
+                var guest = kv.Key;
+                var reviews = kv.Value;
+                sb.AppendLine($"● {guest.Name} さんのレビュー ({reviews.Count}件):");
+                foreach (var r in reviews)
+                    sb.AppendLine(r + "\n");
             }
 
-            MessageBox.Show(allReviews, "レビュー一覧");
+            MessageBox.Show(sb.ToString(), "レビュー一覧");
         }
     }
 }

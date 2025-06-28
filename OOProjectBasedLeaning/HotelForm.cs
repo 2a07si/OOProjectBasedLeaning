@@ -20,7 +20,7 @@ namespace OOProjectBasedLeaning
             InitializeComponent();
             InitializeRoomBoxes();
 
-            InitializeClock();
+            InitializeClock(); // 時計
 
             hotel.ReservationAdded += OnReservationAdded;
             hotel.CheckedIn += OnHotelCheckedIn;
@@ -109,19 +109,6 @@ namespace OOProjectBasedLeaning
                   e.Data.GetData(DataFormats.Serializable) is GuestPanel gp))
                 return;
 
-            // Room→Room の直接移動は禁止
-            var oldBox = gp.Parent as GroupBox;
-            if (oldBox != null)
-            {
-                MessageBox.Show(
-                    "部屋から部屋への直接移動はできません。\n一度チェックアウトしてから再度チェックインしてください。",
-                    "移動不可",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                return;
-            }
-
             var newBox = (GroupBox)sender;
             var guest = gp.GetGuest();
             var roomNumber = roomBoxes[newBox].Number;
@@ -150,7 +137,7 @@ namespace OOProjectBasedLeaning
             {
                 Text = $"予約: {res.Guest.Name}",
                 AutoSize = true,
-                Location = new Point(10, 20)
+                Location = new Point(10,46)
             };
             gbx.Controls.Add(lbl);
             UpdateRoomColor(gbx, res.Room);
@@ -220,7 +207,7 @@ namespace OOProjectBasedLeaning
         {
             gp.Parent?.Controls.Remove(gp);
             targetBox.Controls.Add(gp);
-            gp.Location = new Point(10, 20);
+            gp.Location = new Point(15, 30);
             gp.BringToFront();
         }
 

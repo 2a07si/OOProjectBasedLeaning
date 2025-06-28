@@ -46,17 +46,23 @@ namespace OOProjectBasedLeaning
             return this;
         }
 
-        // 単一ゲストをチェックアウト
-        public Room RemoveGuest(Guest guest)
+        // 単一ゲストのチェックアウト
+        public virtual Room RemoveGuest(Guest guest)
         {
-            guests.Remove(guest.RemoveRoom());
+            if (guests.Remove(guest))
+            {
+                guest.RemoveRoom();
+            }
             return this;
         }
 
         // 複数ゲストまとめてチェックアウト
-        public Room RemoveGuests(List<Guest> guests)
+        public virtual Room RemoveGuests(IEnumerable<Guest> companions)
         {
-            guests.ForEach(g => RemoveGuest(g));
+            foreach (var g in companions)
+            {
+                RemoveGuest(g);
+            }
             return this;
         }
 
