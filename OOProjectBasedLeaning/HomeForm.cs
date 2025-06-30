@@ -47,13 +47,47 @@ namespace OOProjectBasedLeaning
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
         {
             e.Effect = DragDropEffects.Move;
+
+            if (e.Data.GetDataPresent(DataFormats.Serializable) &&
+        e.Data.GetData(DataFormats.Serializable) is GuestPanel guestPanel)
+            {
+                // ドラッグ元フォームが YoyakuForm なら拒否
+                if (guestPanel.FindForm() is YoyakuForm)
+                {
+                    e.Effect = DragDropEffects.None;
+                    return;
+                }
+
+                e.Effect = DragDropEffects.Move;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+
         }
 
         // HomeForm へドロップされたときの処理
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
-            if (!(obj is GuestPanel guestPanel))
+
+            if (obj is GuestPanel guestPanel)
+            {
+                // ドラッグ元フォームが YoyakuForm なら拒否
+                if (guestPanel.FindForm() is YoyakuForm)
+                {
+                    MessageBox.Show("予約管理画面からホーム画面への移動はできません。", "操作無効", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // 通常の処理（必要に応じて追加）
+                guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+            }
+            else
+            {
+                
                 return;
+            }
 
             var guest = guestPanel.GetGuest();
 

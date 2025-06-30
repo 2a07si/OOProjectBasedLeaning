@@ -10,7 +10,7 @@ namespace OOProjectBasedLeaning
     {
         // シングルトン経由でホテル情報を一元管理
         private readonly Hotel hotel = Hotel.Instance;
-
+        private readonly FlowLayoutPanel guestPanelArea;
         // 予約完了日時記録
         private DateTime? reservationCompletedTime;
 
@@ -18,6 +18,16 @@ namespace OOProjectBasedLeaning
         {
             Text = "予約管理";
             Size = new Size(735, 600);
+
+            //guestPanelArea = new FlowLayoutPanel
+            //{
+            //    Dock = DockStyle.Left,
+            //    Width = 400,
+            //    AutoScroll = true,
+            //    FlowDirection = FlowDirection.TopDown,
+            //    WrapContents = false
+            //};
+            //Controls.Add(guestPanelArea);
         }
 
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
