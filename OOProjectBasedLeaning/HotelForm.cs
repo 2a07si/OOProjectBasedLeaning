@@ -8,56 +8,34 @@ namespace OOProjectBasedLeaning
 {
     public partial class HotelForm : DragDropForm
     {
+        // シングルトンインスタンス
         private readonly Hotel hotel = Hotel.Instance;
+        // 各 GroupBox と対応する Room オブジェクトを保持するマップ
         private readonly Dictionary<GroupBox, Room> roomBoxes = new();
 
-
+        // デジタル時計用のタイマー
         private System.Windows.Forms.Timer clockTimer;
+        // 現在時刻を表示するラベル
         private Label clockLabel;
 
         public HotelForm()
         {
             InitializeComponent();
+            // 部屋構築
             InitializeRoomBoxes();
 
-            InitializeClock(); // 時計
+            InitializeClock(); // 時計配置
 
-            hotel.ReservationAdded += OnReservationAdded;
-            hotel.CheckedIn += OnHotelCheckedIn;
-            hotel.CheckedOut += OnHotelCheckedOut;
-            hotel.OperationFailed += OnHotelOperationFailed;
+            hotel.ReservationAdded += OnReservationAdded;    // 予約追加時
+            hotel.CheckedIn += OnHotelCheckedIn;             // チェックイン成功時
+            hotel.CheckedOut += OnHotelCheckedOut;           // チェックアウト成功時
+            hotel.OperationFailed += OnHotelOperationFailed; // 操作失敗時
 
             foreach (var res in hotel.GetAllReservations())
                 OnReservationAdded(res);
         }
 
-        // 時計
-        private void InitializeClock()
-        {
-            clockLabel = new Label
-            {
-                Name = "lblClock",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                AutoSize = true,
-                Location = new Point(this.ClientSize.Width - 100, 70),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
-            };
-            Controls.Add(clockLabel);
-
-            clockTimer = new System.Windows.Forms.Timer { Interval = 1000 };
-            clockTimer.Tick += (s, e) =>
-            {
-                clockLabel.Text = DateTime.Now.ToString("HH:mm:ss");
-            };
-            clockTimer.Start();
-
-            clockLabel.Text = DateTime.Now.ToString("HH:mm:ss");
-        }
-
-        protected override void OnFormDragEnterSerializable(DragEventArgs e) => e.Effect = DragDropEffects.None;
-        protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e) { }
-
-        private void InitializeRoomBoxes()
+        private void InitializeRoomBoxes() // 部屋構築　&　ドラッグドロップのイベントパンドラ設定
         {
             var boxes = new[]
             {
@@ -84,6 +62,36 @@ namespace OOProjectBasedLeaning
             }
         }
 
+        private void InitializeClock() // 時計
+        {
+            clockLabel = new Label
+            {
+                Name = "lblClock",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(this.ClientSize.Width - 100, 70),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            Controls.Add(clockLabel);
+
+            // System.Windows.Forms.Timer を使い 1 秒ごとに Tick
+            clockTimer = new System.Windows.Forms.Timer { Interval = 1000 };
+            clockTimer.Tick += (s, e) =>
+            {
+                // 毎 Tick 時に現在時刻を更新
+                clockLabel.Text = DateTime.Now.ToString("HH:mm:ss");
+            };
+            clockTimer.Start();
+
+            // 初回表示
+            clockLabel.Text = DateTime.Now.ToString("HH:mm:ss");
+        }
+
+        protected override void OnFormDragEnterSerializable(DragEventArgs e) => e.Effect = DragDropEffects.None;
+        protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e) { }
+
+
+
         private void RoomBox_DragEnterOrOver(object sender, DragEventArgs e)
         {
             e.Effect = (e.Data.GetDataPresent(DataFormats.Serializable) &&
@@ -92,7 +100,8 @@ namespace OOProjectBasedLeaning
                        : DragDropEffects.None;
         }
 
-        private void RoomBox_ControlRemoved(object sender, ControlEventArgs e)
+        // チェックアウト
+        private void RoomBox_ControlRemoved(object sender, ControlEventArgs e) 
         {
             if (e.Control is GuestPanel gp && sender is GroupBox gbx)
             {
@@ -103,6 +112,7 @@ namespace OOProjectBasedLeaning
             }
         }
 
+        // チェックイン
         private void RoomBox_DragDrop(object sender, DragEventArgs e)
         {
             if (!(e.Data.GetDataPresent(DataFormats.Serializable) &&
@@ -124,6 +134,7 @@ namespace OOProjectBasedLeaning
             }
         }
 
+        // 予約
         private void OnReservationAdded(Reservation res)
         {
             if (InvokeRequired)
@@ -143,6 +154,9 @@ namespace OOProjectBasedLeaning
             UpdateRoomColor(gbx, res.Room);
         }
 
+        /// <summary>
+        /// CheckedIn イベントハンドラ：チェックイン成功時に色更新とダイアログ表示
+        /// </summary>
         private void OnHotelCheckedIn(object? sender, HotelEventArgs e)
         {
             if (InvokeRequired)
@@ -161,6 +175,9 @@ namespace OOProjectBasedLeaning
             );
         }
 
+        /// <summary>
+        /// CheckedOut イベントハンドラ：チェックアウト成功時に予約ラベル削除・色更新・ダイアログ表示
+        /// </summary>
         private void OnHotelCheckedOut(object? sender, HotelEventArgs e)
         {
             if (InvokeRequired)
@@ -187,6 +204,10 @@ namespace OOProjectBasedLeaning
             );
         }
 
+
+        /// <summary>
+        /// OperationFailed イベントハンドラ：操作失敗時にエラーメッセージを表示
+        /// </summary>
         private void OnHotelOperationFailed(object? sender, HotelErrorEventArgs e)
         {
             if (InvokeRequired)
@@ -203,6 +224,7 @@ namespace OOProjectBasedLeaning
             );
         }
 
+        // グループボックス内に入ったパネル位置を調整
         private void MoveGuestPanelTo(GuestPanel gp, GroupBox targetBox)
         {
             gp.Parent?.Controls.Remove(gp);
@@ -211,6 +233,7 @@ namespace OOProjectBasedLeaning
             gp.BringToFront();
         }
 
+        // 部屋の色替え
         private void UpdateRoomColor(GroupBox gbx, Room room)
         {
             if (hotel.IsOccupied(room)) gbx.BackColor = Color.LightCoral;
