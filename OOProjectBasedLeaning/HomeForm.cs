@@ -18,7 +18,7 @@ namespace OOProjectBasedLeaning
         public HomeForm()
         {
             Text = "Home Form";
-            Size = new Size(650, 500);
+            Size = new Size(652, 600);
             BackColor = Color.White;
 
             // ゲストパネル表示エリアのセットアップ
@@ -51,8 +51,8 @@ namespace OOProjectBasedLeaning
             if (e.Data.GetDataPresent(DataFormats.Serializable) &&
         e.Data.GetData(DataFormats.Serializable) is GuestPanel guestPanel)
             {
-                // ドラッグ元フォームが YoyakuForm なら拒否
-                if (guestPanel.FindForm() is YoyakuForm)
+                // ドラッグ元フォームが YoyakuFormかGuestCreatorForm なら拒否
+                if (guestPanel.FindForm() is YoyakuForm || guestPanel.FindForm() is GuestCreatorForm)
                 {
                     e.Effect = DragDropEffects.None;
                     return;
@@ -73,14 +73,14 @@ namespace OOProjectBasedLeaning
 
             if (obj is GuestPanel guestPanel)
             {
-                // ドラッグ元フォームが YoyakuForm なら拒否
-                if (guestPanel.FindForm() is YoyakuForm)
+                // ドラッグ元フォームが YoyakuFormかGuestCreatorForm なら拒否
+                if (guestPanel.FindForm() is YoyakuForm || guestPanel.FindForm() is GuestCreatorForm)
                 {
                     MessageBox.Show("予約管理画面からホーム画面への移動はできません。", "操作無効", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // 通常の処理（必要に応じて追加）
+                // 通常の処理
                 guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
             }
             else
