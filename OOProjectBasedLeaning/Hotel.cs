@@ -15,7 +15,6 @@ namespace OOProjectBasedLeaning
 
         private Hotel()
         {
-            // 全室の初期化
             allRooms = new List<Room>
             {
                 new RegularRoom(501, 15000), new RegularRoom(502, 15000), new RegularRoom(503, 12000),
