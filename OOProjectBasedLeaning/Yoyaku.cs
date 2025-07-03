@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -13,6 +14,8 @@ namespace OOProjectBasedLeaning
         private readonly FlowLayoutPanel guestPanelArea;
         // 予約完了日時記録
         private DateTime? reservationCompletedTime;
+
+        private readonly Dictionary<Guest, List<string>> reviewData = new();
 
         public YoyakuForm()
         {
@@ -41,9 +44,20 @@ namespace OOProjectBasedLeaning
 
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
-            if (!(obj is GuestPanel guestPanel))
-                return;
+            if (obj is GuestPanel guestPanel)
+            {
+                var guest = guestPanel.GetGuest();
 
+                if (guestPanel.FindForm() is HotelForm)
+                {
+                    CreateReview(guest);
+                }
+            }
+            else
+            {
+                return;
+            }
+           
             // 重複ドラッグ防止
             if (guestPanelArea.Controls.Contains(guestPanel))
             {
@@ -60,6 +74,7 @@ namespace OOProjectBasedLeaning
 
             // 予約可能／予約済リストを Hotel から取得
             var availableRooms = hotel.AllRooms.Where(r => hotel.IsVacant(r)).ToList();
+
             var reservedRooms = hotel.AllRooms.Where(r => hotel.IsReserved(r)).ToList();
 
             using var selectForm = new RoomSelectForm(availableRooms, reservedRooms, guestPanel.GetGuest());
@@ -121,6 +136,33 @@ namespace OOProjectBasedLeaning
         {
             container.Controls.Add(this);
             this.Location = location;
+        }
+
+        private void CreateReview(Guest guest)
+        {
+            using (var form = new StarRatingForm())
+            {
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    int rating = form.SelectedRating;
+                    string comment = form.Comment;
+
+                    string stars = new string('★', rating) + new string('☆', 5 - rating);
+                    string review = $"評価：{stars}\nコメント：{comment}";
+
+                    if (!reviewData.ContainsKey(guest))
+                        reviewData[guest] = new List<string>();
+
+                    reviewData[guest].Add(review);
+
+                    MessageBox.Show(
+                        $"{guest.Name} さんのレビューを登録しました。\n{review}",
+                        "レビュー内容",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
+            }
         }
     }
 }
