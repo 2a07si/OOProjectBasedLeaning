@@ -8,13 +8,9 @@ namespace OOProjectBasedLeaning
 {
     public partial class YoyakuForm : DragDropForm
     {
-        private List<Room> allRooms;
-        private List<Room> reservedRooms;
-        private List<Room> availableRooms;
         // シングルトン経由でホテル情報を一元管理
         private readonly Hotel hotel = Hotel.Instance;
         private readonly FlowLayoutPanel guestPanelArea;
-        private Dictionary<Guest, Room> guestRoomMap = new();
         // 予約完了日時記録
         private DateTime? reservationCompletedTime;
 
@@ -69,29 +65,19 @@ namespace OOProjectBasedLeaning
             using var selectForm = new RoomSelectForm(availableRooms, reservedRooms, guestPanel.GetGuest());
             if (selectForm.ShowDialog() == DialogResult.OK)
             {
+                var selectedRoom = selectForm.SelectedRoom;
+                if (selectedRoom == null)
+                {
+                    MessageBox.Show("部屋が選択されていません。", "予約エラー", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 try
                 {
-                    var selectedRoom = selectForm.SelectedRoom;
-                    if (selectedRoom == null)
-                    {
-                        MessageBox.Show("部屋が選択されていません。", "予約エラー", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
                     // Hotel クラスに予約を委譲
                     var guest = guestPanel.GetGuest();
                     var now = DateTime.Now;
                     hotel.Reserve(selectedRoom.Number, guest, now, now);
-
-                    var guests = new List<Guest> { guest };
-
-                    if (guest.Companions is List<Guest> companions)
-                    {
-                        guests.AddRange(companions);
-                    }
-
-                    guestRoomMap[guest] = selectedRoom;
-                    reservedRooms.Add(selectedRoom);
-                    UpdateAvailableRooms();
 
                     // UI 上にゲストパネルを配置
                     guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
@@ -130,13 +116,6 @@ namespace OOProjectBasedLeaning
             if (reservationCompletedTime == null)
                 reservationCompletedTime = DateTime.Now;
             return reservationCompletedTime.Value.ToString("yyyy年MM月dd日 HH:mm:ss");
-        }
-
-        private void UpdateAvailableRooms()
-        {
-            availableRooms = allRooms
-                .Where(room => !reservedRooms.Any(r => r.RoomNumber == room.RoomNumber))
-                .ToList();
         }
     }
 }
