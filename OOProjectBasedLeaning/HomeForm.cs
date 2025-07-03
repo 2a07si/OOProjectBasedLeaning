@@ -47,6 +47,13 @@ namespace OOProjectBasedLeaning
             Controls.Add(reviewButton);
         }
 
+        //public void AddReview(Guest guest,string review)
+        //{
+        //    if(!reviewData.ContainsKey(guest))
+        //        reviewData[guest] = new List<string>();
+        //    reviewData[guest].Add(review);
+        //}
+
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
         {
             e.Effect = DragDropEffects.Move;
@@ -200,14 +207,21 @@ namespace OOProjectBasedLeaning
                         var btn = s as Button;
                         if (btn?.Tag is Review r)
                         {
-                            r.Likes++;
-                            btn.Text = $"👍 {r.Likes}";
-
-                            // フォントや色のアップデート（任意）
-                            if (r.Likes == 5)
+                            if (r.Likes < 99)  // 最大99に制限
                             {
-                                reviewLabel.Font = new Font("MS UI Gothic", 11, FontStyle.Bold);
-                                reviewLabel.ForeColor = Color.DarkOrange;
+                                r.Likes++;
+                                btn.Text = $"👍 {r.Likes}";
+
+                                // フォントや色のアップデート（任意）
+                                if (r.Likes == 5)
+                                {
+                                    reviewLabel.Font = new Font("MS UI Gothic", 11, FontStyle.Bold);
+                                    reviewLabel.ForeColor = Color.DarkOrange;
+                                }
+                            }
+                            else
+                            {
+                                MessageBox.Show("いいね数は最大99までです。", "最大値に達しました", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                         }
                     };
