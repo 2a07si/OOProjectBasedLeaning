@@ -19,15 +19,15 @@ namespace OOProjectBasedLeaning
             Text = "予約管理";
             Size = new Size(735, 600);
 
-            //guestPanelArea = new FlowLayoutPanel
-            //{
-            //    Dock = DockStyle.Left,
-            //    Width = 400,
-            //    AutoScroll = true,
-            //    FlowDirection = FlowDirection.TopDown,
-            //    WrapContents = false
-            //};
-            //Controls.Add(guestPanelArea);
+            guestPanelArea = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Left,
+                Width = 400,
+                AutoScroll = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
+            };
+            Controls.Add(guestPanelArea);
         }
 
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
@@ -80,7 +80,7 @@ namespace OOProjectBasedLeaning
                     hotel.Reserve(selectedRoom.Number, guest, now, now);
 
                     // UI 上にゲストパネルを配置
-                    guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
+                    guestPanelArea.Controls.Add(guestPanel);
 
                     reservationCompletedTime = DateTime.Now;
                     MessageBox.Show(
@@ -116,6 +116,11 @@ namespace OOProjectBasedLeaning
             if (reservationCompletedTime == null)
                 reservationCompletedTime = DateTime.Now;
             return reservationCompletedTime.Value.ToString("yyyy年MM月dd日 HH:mm:ss");
+        }
+        public void AddDragDropForm(Control container, Point location)
+        {
+            container.Controls.Add(this);
+            this.Location = location;
         }
     }
 }
