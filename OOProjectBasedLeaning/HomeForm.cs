@@ -9,10 +9,8 @@ namespace OOProjectBasedLeaning
     {
         private readonly Hotel hotel = Hotel.Instance;
 
-        // ゲストパネル表示用エリア
         private readonly FlowLayoutPanel guestPanelArea;
 
-        // ゲストごとのレビュー保存辞書（複数レビューを保持）
         private readonly Dictionary<Guest, List<string>> reviewData = new();
 
         public HomeForm()
@@ -21,7 +19,6 @@ namespace OOProjectBasedLeaning
             Size = new Size(652, 600);
             BackColor = Color.White;
 
-            // ゲストパネル表示エリアのセットアップ
             guestPanelArea = new FlowLayoutPanel
             {
                 Dock = DockStyle.Left,
@@ -32,7 +29,6 @@ namespace OOProjectBasedLeaning
             };
             Controls.Add(guestPanelArea);
 
-            // レビュー確認ボタン
             var reviewButton = new Button
             {
                 Text = "レビュー確認",
@@ -43,15 +39,13 @@ namespace OOProjectBasedLeaning
             Controls.Add(reviewButton);
         }
 
-        // HomeForm へのドラッグ許可
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
         {
             e.Effect = DragDropEffects.Move;
 
             if (e.Data.GetDataPresent(DataFormats.Serializable) &&
-        e.Data.GetData(DataFormats.Serializable) is GuestPanel guestPanel)
+                e.Data.GetData(DataFormats.Serializable) is GuestPanel guestPanel)
             {
-                // ドラッグ元フォームが YoyakuFormかGuestCreatorForm なら拒否
                 if (guestPanel.FindForm() is YoyakuForm || guestPanel.FindForm() is GuestCreatorForm)
                 {
                     e.Effect = DragDropEffects.None;
@@ -64,34 +58,27 @@ namespace OOProjectBasedLeaning
             {
                 e.Effect = DragDropEffects.None;
             }
-
         }
 
-        // HomeForm へドロップされたときの処理
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
-
             if (obj is GuestPanel guestPanel)
             {
-                // ドラッグ元フォームが YoyakuFormかGuestCreatorForm なら拒否
                 if (guestPanel.FindForm() is YoyakuForm || guestPanel.FindForm() is GuestCreatorForm)
                 {
                     MessageBox.Show("予約管理画面からホーム画面への移動はできません。", "操作無効", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // 通常の処理
                 guestPanel.AddDragDropForm(this, PointToClient(new Point(e.X, e.Y)));
             }
             else
             {
-                
                 return;
             }
 
             var guest = guestPanel.GetGuest();
 
-            // 既に HomeForm 内にいなければパネルを追加
             if (!guestPanelArea.Controls.Contains(guestPanel))
             {
                 var oldParent = guestPanel.Parent;
@@ -101,49 +88,37 @@ namespace OOProjectBasedLeaning
                 guestPanelArea.Controls.Add(guestPanel);
             }
 
-            // レビュー作成
             CreateReview(guest);
         }
 
-        // レビュー入力ダイアログ
+        // ⭐ 星評価フォームを呼び出す ⭐
         private void CreateReview(Guest guest)
         {
-            int rating;
-            while (true)
+            using (var form = new StarRatingForm())
             {
-                string input = Microsoft.VisualBasic.Interaction.InputBox(
-                    "1〜5の評価を入力してください。（☆の数）",
-                    "レビュー評価",
-                    "5"
-                );
-                if (int.TryParse(input, out rating) && rating >= 1 && rating <= 5)
-                    break;
-                MessageBox.Show("1〜5の数字で入力してください。");
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    int rating = form.SelectedRating;
+                    string comment = form.Comment;
+
+                    string stars = new string('★', rating) + new string('☆', 5 - rating);
+                    string review = $"評価：{stars}\nコメント：{comment}";
+
+                    if (!reviewData.ContainsKey(guest))
+                        reviewData[guest] = new List<string>();
+
+                    reviewData[guest].Add(review);
+
+                    MessageBox.Show(
+                        $"{guest.Name} さんのレビューを登録しました。\n{review}",
+                        "レビュー内容",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
             }
-
-            string comment = Microsoft.VisualBasic.Interaction.InputBox(
-                "コメントを入力してください。",
-                "レビューコメント",
-                ""
-            );
-            string stars = new string('★', rating) + new string('☆', 5 - rating);
-            string review = $"評価：{stars}\nコメント：{comment}";
-
-            // 辞書に追加
-            if (!reviewData.ContainsKey(guest))
-                reviewData[guest] = new List<string>();
-            reviewData[guest].Add(review);
-
-            // 完了メッセージ
-            MessageBox.Show(
-                $"{guest.Name} さんのレビューを登録しました。\n{review}",
-                "レビュー内容",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
         }
 
-        // 「レビュー確認」ボタン押下時
         private void ReviewButton_Click(object sender, EventArgs e)
         {
             if (reviewData.Count == 0)
