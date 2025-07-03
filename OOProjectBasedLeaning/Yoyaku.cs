@@ -44,16 +44,7 @@ namespace OOProjectBasedLeaning
 
         protected override void OnFormDragDropSerializable(object? obj, DragEventArgs e)
         {
-            if (obj is GuestPanel guestPanel)
-            {
-                var guest = guestPanel.GetGuest();
-
-                if (guestPanel.FindForm() is HotelForm)
-                {
-                    CreateReview(guest);
-                }
-            }
-            else
+            if (!(obj is GuestPanel guestPanel))
             {
                 return;
             }
@@ -70,6 +61,18 @@ namespace OOProjectBasedLeaning
                 );
                 e.Effect = DragDropEffects.None;
                 return;
+            }
+
+            if (guestPanel.FindForm() is HotelForm)
+            {
+                var guest = guestPanel.GetGuest();
+
+                // チェックアウト処理（Hotel クラスにメソッドがある前提）
+                hotel.CheckOut(guest);
+
+                // レビュー入力
+                CreateReview(guest);
+
             }
 
             // 予約可能／予約済リストを Hotel から取得
@@ -140,29 +143,7 @@ namespace OOProjectBasedLeaning
 
         private void CreateReview(Guest guest)
         {
-            using (var form = new StarRatingForm())
-            {
-                if (form.ShowDialog() == DialogResult.OK)
-                {
-                    int rating = form.SelectedRating;
-                    string comment = form.Comment;
-
-                    string stars = new string('★', rating) + new string('☆', 5 - rating);
-                    string review = $"評価：{stars}\nコメント：{comment}";
-
-                    if (!reviewData.ContainsKey(guest))
-                        reviewData[guest] = new List<string>();
-
-                    reviewData[guest].Add(review);
-
-                    MessageBox.Show(
-                        $"{guest.Name} さんのレビューを登録しました。\n{review}",
-                        "レビュー内容",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
-                    );
-                }
-            }
+            HomeForm.CreateReview(guest);
         }
     }
 }
