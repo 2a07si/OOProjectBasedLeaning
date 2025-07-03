@@ -47,6 +47,7 @@ namespace OOProjectBasedLeaning
                 Location = new Point(-5, 427)
             };
             homeForm.Show();
+            guestForm.Focus();
             this.Hide();
         }
     }
