@@ -21,12 +21,6 @@ namespace OOProjectBasedLeaning
         }
         private void Form1_Shown(object? sender, EventArgs e)
         {
-            var hotelForm = new HotelForm()
-            {
-                StartPosition = FormStartPosition.Manual,
-                Location = new Point(-5, 0)
-            };
-            hotelForm.Show();
 
             var guestForm = new GuestCreatorForm()
             {
@@ -34,19 +28,24 @@ namespace OOProjectBasedLeaning
                 Location = new Point(1348, 427)
             };
             guestForm.Show();
-            var yoyakuForm = new YoyakuForm()
-            {
-                StartPosition = FormStartPosition.Manual,
-                Location = new Point(630, 427)
-            };
-            yoyakuForm.Show();
-
             var homeForm = new HomeForm()
             {
                 StartPosition = FormStartPosition.Manual,
                 Location = new Point(-5, 427)
             };
             homeForm.Show();
+            var hotelForm = new HotelForm(homeForm)
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = new Point(-5, 0)
+            };
+            hotelForm.Show();
+            var yoyakuForm = new YoyakuForm(homeForm)
+            {
+                StartPosition = FormStartPosition.Manual,
+                Location = new Point(630, 427)
+            };
+            yoyakuForm.Show();
             guestForm.Focus();
             this.Hide();
         }

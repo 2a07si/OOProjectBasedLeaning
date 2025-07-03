@@ -12,13 +12,16 @@ namespace OOProjectBasedLeaning
         // シングルトン経由でホテル情報を一元管理
         private readonly Hotel hotel = Hotel.Instance;
         private readonly FlowLayoutPanel guestPanelArea;
+        private readonly HomeForm homeForm;
         // 予約完了日時記録
         private DateTime? reservationCompletedTime;
 
         private readonly Dictionary<Guest, List<string>> reviewData = new();
 
-        public YoyakuForm()
+        public YoyakuForm(HomeForm homeForm)
         {
+            this.homeForm = homeForm;
+
             Text = "予約管理";
             Size = new Size(735, 600);
 
@@ -71,7 +74,7 @@ namespace OOProjectBasedLeaning
                 hotel.CheckOut(guest);
 
                 // レビュー入力
-                CreateReview(guest);
+                homeForm.CreateReview(guest);
 
             }
 
@@ -141,9 +144,5 @@ namespace OOProjectBasedLeaning
             this.Location = location;
         }
 
-        private void CreateReview(Guest guest)
-        {
-            HomeForm.CreateReview(guest);
-        }
     }
 }

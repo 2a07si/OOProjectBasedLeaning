@@ -10,6 +10,7 @@ namespace OOProjectBasedLeaning
     {
         // シングルトンインスタンス
         private readonly Hotel hotel = Hotel.Instance;
+        private readonly HomeForm homeForm; 
         // 各 GroupBox と対応する Room オブジェクトを保持するマップ
         private readonly Dictionary<GroupBox, Room> roomBoxes = new();
 
@@ -18,9 +19,10 @@ namespace OOProjectBasedLeaning
         // 現在時刻を表示するラベル
         private Label clockLabel;
 
-        public HotelForm()
+        public HotelForm(HomeForm home)
         {
             InitializeComponent();
+            homeForm = home;
             // 部屋構築
             InitializeRoomBoxes();
 
