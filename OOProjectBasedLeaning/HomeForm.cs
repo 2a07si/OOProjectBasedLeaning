@@ -107,7 +107,7 @@ namespace OOProjectBasedLeaning
         }
 
         // ⭐ 星評価フォームを呼び出す ⭐
-        private void CreateReview(Guest guest)
+        public void CreateReview(Guest guest)
         {
             using (var form = new StarRatingForm())
             {
