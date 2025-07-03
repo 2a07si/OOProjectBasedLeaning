@@ -33,7 +33,7 @@ namespace OOProjectBasedLeaning
             {
                 Text = "レビュー確認",
                 Size = new Size(120, 40),
-                Location = new Point(400, 20)
+                Location = new Point(400, 40)
             };
             reviewButton.Click += ReviewButton_Click;
             Controls.Add(reviewButton);
