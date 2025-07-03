@@ -45,7 +45,7 @@ namespace OOProjectBasedLeaning
                 return;
 
             // 重複ドラッグ防止
-            if (Controls.Contains(guestPanel))
+            if (guestPanelArea.Controls.Contains(guestPanel))
             {
                 MessageBox.Show(
                     $"{guestPanel.GetGuest().Name} さんは既に予約済みです。\n" +
