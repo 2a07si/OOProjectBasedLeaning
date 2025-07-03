@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -11,6 +10,7 @@ namespace OOProjectBasedLeaning
         public string Comment { get; private set; } = "";
 
         private readonly Button[] starButtons = new Button[5];
+        private RichTextBox commentBox;
 
         public StarRatingForm()
         {
@@ -19,18 +19,14 @@ namespace OOProjectBasedLeaning
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
 
-            int marginTop = 50;       // 上余白
+            int marginTop = 50;
             int starCount = 5;
-            int starSize = 70;        // 星ボタンの大きさ
-            int starSpacing = 10;     // 星ボタン間の間隔(px)
+            int starSize = 70;
+            int starSpacing = 10;
 
-            // 星ボタン全体の幅を計算
             int totalWidth = starCount * starSize + (starCount - 1) * starSpacing;
-
-            // フォーム内部の幅を使い、中央開始X座標を算出
             int startX = (this.ClientSize.Width - totalWidth) / 2;
 
-            // 星ボタンの作成と配置
             for (int i = 0; i < starCount; i++)
             {
                 var btn = new Button
@@ -43,11 +39,9 @@ namespace OOProjectBasedLeaning
                     FlatStyle = FlatStyle.Flat,
                     TabStop = false
                 };
-
                 btn.FlatAppearance.BorderSize = 0;
                 btn.FlatAppearance.MouseDownBackColor = Color.White;
                 btn.FlatAppearance.MouseOverBackColor = Color.White;
-
                 btn.Click += StarButton_Click;
                 starButtons[i] = btn;
                 Controls.Add(btn);
@@ -57,17 +51,18 @@ namespace OOProjectBasedLeaning
             var commentLabel = new Label
             {
                 Text = "コメント:",
-                Font = new Font("MS UI Gothic", 14),
-                Location = new Point(50, marginTop + 100)
+                Font = new Font("MS UI Gothic", 16, FontStyle.Bold),
+                Size = new Size(120,30),
+                Location = new Point(50, marginTop + 80)  // 10px上に移動
             };
             Controls.Add(commentLabel);
 
-            // コメント入力欄
-            var commentBox = new TextBox
+            // コメント入力欄をRichTextBoxに変更し、少し上に配置
+            commentBox = new RichTextBox
             {
                 Multiline = true,
                 Size = new Size(480, 120),
-                Location = new Point(50, marginTop + 130),
+                Location = new Point(50, marginTop + 120),  // 10px上に移動（元130 → 120）
                 Font = new Font("MS UI Gothic", 12)
             };
             Controls.Add(commentBox);
@@ -80,7 +75,6 @@ namespace OOProjectBasedLeaning
                 Size = new Size(200, 60),
                 Location = new Point((Width - 200) / 2 - 10, Height - 120)
             };
-
             submitButton.Click += (s, e) =>
             {
                 Comment = commentBox.Text;
