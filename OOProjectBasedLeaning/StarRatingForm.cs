@@ -15,24 +15,39 @@ namespace OOProjectBasedLeaning
         public StarRatingForm()
         {
             Text = "レビュー評価";
-            Size = new Size(600, 450); // フォーム全体を少し大きく
+            Size = new Size(600, 450);
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
 
-            int margin = 50; // 余白用変数
-            int starSpacing = 90; // 星ボタンの間隔
+            int marginTop = 50;       // 上余白
+            int starCount = 5;
+            int starSize = 70;        // 星ボタンの大きさ
+            int starSpacing = 10;     // 星ボタン間の間隔(px)
 
-            // 星ボタンの作成
-            for (int i = 0; i < 5; i++)
+            // 星ボタン全体の幅を計算
+            int totalWidth = starCount * starSize + (starCount - 1) * starSpacing;
+
+            // フォーム内部の幅を使い、中央開始X座標を算出
+            int startX = (this.ClientSize.Width - totalWidth) / 2;
+
+            // 星ボタンの作成と配置
+            for (int i = 0; i < starCount; i++)
             {
                 var btn = new Button
                 {
                     Text = "☆",
                     Font = new Font(FontFamily.GenericSansSerif, 32),
-                    Size = new Size(70, 70),
-                    Location = new Point(margin + i * starSpacing, margin), // 左右・上に余白
-                    Tag = i + 1
+                    Size = new Size(starSize, starSize),
+                    Location = new Point(startX + i * (starSize + starSpacing), marginTop),
+                    Tag = i + 1,
+                    FlatStyle = FlatStyle.Flat,
+                    TabStop = false
                 };
+
+                btn.FlatAppearance.BorderSize = 0;
+                btn.FlatAppearance.MouseDownBackColor = Color.White;
+                btn.FlatAppearance.MouseOverBackColor = Color.White;
+
                 btn.Click += StarButton_Click;
                 starButtons[i] = btn;
                 Controls.Add(btn);
@@ -43,19 +58,18 @@ namespace OOProjectBasedLeaning
             {
                 Text = "コメント:",
                 Font = new Font("MS UI Gothic", 14),
-                Location = new Point(margin, margin + 100) // 星から適度に余白
+                Location = new Point(50, marginTop + 100)
             };
+            Controls.Add(commentLabel);
 
             // コメント入力欄
             var commentBox = new TextBox
             {
                 Multiline = true,
                 Size = new Size(480, 120),
-                Location = new Point(margin, margin + 130),
+                Location = new Point(50, marginTop + 130),
                 Font = new Font("MS UI Gothic", 12)
             };
-
-            Controls.Add(commentLabel);
             Controls.Add(commentBox);
 
             // 登録ボタン
@@ -64,7 +78,7 @@ namespace OOProjectBasedLeaning
                 Text = "登録",
                 Font = new Font("MS UI Gothic", 16, FontStyle.Bold),
                 Size = new Size(200, 60),
-                Location = new Point((Width - 200) / 2 - 10, Height - 120) // 画面中央・下に配置
+                Location = new Point((Width - 200) / 2 - 10, Height - 120)
             };
 
             submitButton.Click += (s, e) =>
@@ -78,7 +92,6 @@ namespace OOProjectBasedLeaning
                 DialogResult = DialogResult.OK;
                 Close();
             };
-
             Controls.Add(submitButton);
         }
 
@@ -87,7 +100,7 @@ namespace OOProjectBasedLeaning
             if (sender is Button clickedButton && clickedButton.Tag is int rating)
             {
                 SelectedRating = rating;
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < starButtons.Length; i++)
                 {
                     starButtons[i].Text = i < rating ? "★" : "☆";
                 }
