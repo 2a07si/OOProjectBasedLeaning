@@ -81,7 +81,7 @@ namespace OOProjectBasedLeaning
             // —\–ñ‰Â”\^—\–ñÏƒŠƒXƒg‚ð Hotel ‚©‚çŽæ“¾
             var availableRooms = hotel.AllRooms.Where(r => hotel.IsVacant(r)).ToList();
 
-            var reservedRooms = hotel.AllRooms.Where(r => hotel.IsReserved(r)).ToList();
+            var reservedRooms = hotel.AllRooms.Where(r => r.IsReserved).ToList();
 
             using var selectForm = new RoomSelectForm(availableRooms, reservedRooms, guestPanel.GetGuest());
             if (selectForm.ShowDialog() == DialogResult.OK)

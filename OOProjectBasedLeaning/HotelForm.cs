@@ -33,8 +33,12 @@ namespace OOProjectBasedLeaning
             hotel.CheckedOut += OnHotelCheckedOut;           // チェックアウト成功時
             hotel.OperationFailed += OnHotelOperationFailed; // 操作失敗時
 
-            foreach (var res in hotel.GetAllReservations())
+            foreach (var res in hotel.AllRooms
+                            .Where(r => r.IsReserved)
+                            .Select(r => new Reservation(r.ReservedBy!, r, r.ReservedCheckIn!.Value, r.ReservedCheckOut!.Value)))
+            {
                 OnReservationAdded(res);
+            }
         }
 
         private void InitializeRoomBoxes() // 部屋構築　&　ドラッグドロップのイベントパンドラ設定
@@ -239,7 +243,7 @@ namespace OOProjectBasedLeaning
         private void UpdateRoomColor(GroupBox gbx, Room room)
         {
             if (hotel.IsOccupied(room)) gbx.BackColor = Color.LightCoral;
-            else if (hotel.IsReserved(room)) gbx.BackColor = Color.LightBlue;
+            else if (room.IsReserved) gbx.BackColor = Color.LightBlue;
             else gbx.BackColor = Color.LightGreen;
         }
     }
