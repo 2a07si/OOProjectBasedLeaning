@@ -5,13 +5,21 @@ using System.Windows.Forms;
 
 namespace OOProjectBasedLeaning
 {
+    // レビュー内容といいね数を管理するクラス
+    public class Review
+    {
+        public string Content { get; set; } = "";
+        public int Likes { get; set; } = 0;
+    }
+
     public partial class HomeForm : DragDropForm
     {
         private readonly Hotel hotel = Hotel.Instance;
 
         private readonly FlowLayoutPanel guestPanelArea;
 
-        private readonly Dictionary<Guest, List<string>> reviewData = new();
+        // Guestごとに複数レビュー保持（Review型リスト）
+        private readonly Dictionary<Guest, List<Review>> reviewData = new();
 
         public HomeForm()
         {
@@ -102,15 +110,15 @@ namespace OOProjectBasedLeaning
                     string comment = form.Comment;
 
                     string stars = new string('★', rating) + new string('☆', 5 - rating);
-                    string review = $"評価：{stars}\nコメント：{comment}";
+                    string reviewText = $"評価：{stars}\nコメント：{comment}";
 
                     if (!reviewData.ContainsKey(guest))
-                        reviewData[guest] = new List<string>();
+                        reviewData[guest] = new List<Review>();
 
-                    reviewData[guest].Add(review);
+                    reviewData[guest].Add(new Review { Content = reviewText, Likes = 0 });
 
                     MessageBox.Show(
-                        $"{guest.Name} さんのレビューを登録しました。\n{review}",
+                        $"{guest.Name} さんのレビューを登録しました。\n{reviewText}",
                         "レビュー内容",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information
@@ -119,6 +127,7 @@ namespace OOProjectBasedLeaning
             }
         }
 
+        // レビュー一覧表示 + いいね！機能付き
         private void ReviewButton_Click(object sender, EventArgs e)
         {
             if (reviewData.Count == 0)
@@ -127,18 +136,88 @@ namespace OOProjectBasedLeaning
                 return;
             }
 
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine("登録済みレビュー一覧\n");
+            var form = new Form
+            {
+                Text = "レビュー一覧",
+                Size = new Size(500, 600),
+                StartPosition = FormStartPosition.CenterParent
+            };
+
+            var panel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
+            };
+            form.Controls.Add(panel);
+
             foreach (var kv in reviewData)
             {
                 var guest = kv.Key;
                 var reviews = kv.Value;
-                sb.AppendLine($"● {guest.Name} さんのレビュー ({reviews.Count}件):");
-                foreach (var r in reviews)
-                    sb.AppendLine(r + "\n");
+
+                var guestLabel = new Label
+                {
+                    Text = $"● {guest.Name} さんのレビュー ({reviews.Count}件):",
+                    Font = new Font("MS UI Gothic", 12, FontStyle.Bold),
+                    AutoSize = true
+                };
+                panel.Controls.Add(guestLabel);
+
+                // いいね数順に降順ソート
+                reviews.Sort((a, b) => b.Likes.CompareTo(a.Likes));
+
+                foreach (var review in reviews)
+                {
+                    var reviewPanel = new Panel
+                    {
+                        Width = panel.ClientSize.Width - 25,
+                        Height = 80,
+                        BorderStyle = BorderStyle.FixedSingle,
+                        Margin = new Padding(3)
+                    };
+
+                    var reviewLabel = new Label
+                    {
+                        Text = review.Content,
+                        Location = new Point(5, 5),
+                        Size = new Size(reviewPanel.Width - 90, 50),
+                        Font = review.Likes >= 5 ? new Font("MS UI Gothic", 11, FontStyle.Bold) : new Font("MS UI Gothic", 10),
+                        ForeColor = review.Likes >= 5 ? Color.DarkOrange : Color.Black
+                    };
+                    reviewPanel.Controls.Add(reviewLabel);
+
+                    var likeButton = new Button
+                    {
+                        Text = $"👍 {review.Likes}",
+                        Location = new Point(reviewPanel.Width - 75, 20),
+                        Size = new Size(60, 30),
+                        Tag = review
+                    };
+                    likeButton.Click += (s, ev) =>
+                    {
+                        var btn = s as Button;
+                        if (btn?.Tag is Review r)
+                        {
+                            r.Likes++;
+                            btn.Text = $"👍 {r.Likes}";
+
+                            // フォントや色のアップデート（任意）
+                            if (r.Likes == 5)
+                            {
+                                reviewLabel.Font = new Font("MS UI Gothic", 11, FontStyle.Bold);
+                                reviewLabel.ForeColor = Color.DarkOrange;
+                            }
+                        }
+                    };
+                    reviewPanel.Controls.Add(likeButton);
+
+                    panel.Controls.Add(reviewPanel);
+                }
             }
 
-            MessageBox.Show(sb.ToString(), "レビュー一覧");
+            form.ShowDialog();
         }
     }
 }
