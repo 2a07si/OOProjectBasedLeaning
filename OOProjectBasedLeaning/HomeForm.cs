@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace OOProjectBasedLeaning
+﻿namespace OOProjectBasedLeaning
 {
     // レビュー内容といいね数を管理するクラス
     public class Review
@@ -15,11 +10,13 @@ namespace OOProjectBasedLeaning
     public partial class HomeForm : DragDropForm
     {
         private readonly Hotel hotel = Hotel.Instance;
-
         private readonly FlowLayoutPanel guestPanelArea;
 
         // Guestごとに複数レビュー保持（Review型リスト）
         private readonly Dictionary<Guest, List<Review>> reviewData = new();
+
+        // 一度いいねしたレビューを保存するセット（重複防止）
+        private readonly HashSet<Review> likedReviews = new();
 
         public HomeForm()
         {
@@ -46,13 +43,6 @@ namespace OOProjectBasedLeaning
             reviewButton.Click += ReviewButton_Click;
             Controls.Add(reviewButton);
         }
-
-        //public void AddReview(Guest guest,string review)
-        //{
-        //    if(!reviewData.ContainsKey(guest))
-        //        reviewData[guest] = new List<string>();
-        //    reviewData[guest].Add(review);
-        //}
 
         protected override void OnFormDragEnterSerializable(DragEventArgs e)
         {
@@ -106,7 +96,7 @@ namespace OOProjectBasedLeaning
             CreateReview(guest);
         }
 
-        // ⭐ 星評価フォームを呼び出す ⭐
+        // 星評価フォームを呼び出す
         public void CreateReview(Guest guest)
         {
             using (var form = new StarRatingForm())
@@ -172,7 +162,6 @@ namespace OOProjectBasedLeaning
                 };
                 panel.Controls.Add(guestLabel);
 
-                // いいね数順に降順ソート
                 reviews.Sort((a, b) => b.Likes.CompareTo(a.Likes));
 
                 foreach (var review in reviews)
@@ -197,32 +186,30 @@ namespace OOProjectBasedLeaning
 
                     var likeButton = new Button
                     {
-                        Text = $"👍 {review.Likes}",
+                        Text = review.Likes >= 99 ? "👍 99+" : $"👍 {review.Likes}",
                         Location = new Point(reviewPanel.Width - 75, 20),
                         Size = new Size(60, 30),
                         Tag = review
                     };
                     likeButton.Click += (s, ev) =>
-
                     {
                         var btn = s as Button;
                         if (btn?.Tag is Review r)
                         {
-                            if (r.Likes < 99)  // 最大99に制限
+                            if (likedReviews.Contains(r))
                             {
-                                r.Likes++;
-                                btn.Text = $"👍 {r.Likes}";
-
-                                // フォントや色のアップデート（任意）
-                                if (r.Likes == 5)
-                                {
-                                    reviewLabel.Font = new Font("MS UI Gothic", 11, FontStyle.Bold);
-                                    reviewLabel.ForeColor = Color.DarkOrange;
-                                }
+                                MessageBox.Show("このレビューには既にいいねしています。", "いいね済み", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                return;
                             }
-                            else
+
+                            r.Likes++;
+                            btn.Text = r.Likes >= 99 ? "👍 99+" : $"👍 {r.Likes}";
+                            likedReviews.Add(r);
+
+                            if (r.Likes == 5)
                             {
-                                MessageBox.Show("いいね数は最大99までです。", "最大値に達しました", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                reviewLabel.Font = new Font("MS UI Gothic", 11, FontStyle.Bold);
+                                reviewLabel.ForeColor = Color.DarkOrange;
                             }
                         }
                     };
