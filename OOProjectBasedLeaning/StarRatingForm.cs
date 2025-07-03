@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace OOProjectBasedLeaning
@@ -20,17 +15,22 @@ namespace OOProjectBasedLeaning
         public StarRatingForm()
         {
             Text = "レビュー評価";
-            Size = new Size(350, 250);
+            Size = new Size(600, 450); // フォーム全体を少し大きく
             StartPosition = FormStartPosition.CenterParent;
+            BackColor = Color.White;
 
+            int margin = 50; // 余白用変数
+            int starSpacing = 90; // 星ボタンの間隔
+
+            // 星ボタンの作成
             for (int i = 0; i < 5; i++)
             {
                 var btn = new Button
                 {
                     Text = "☆",
-                    Font = new Font(FontFamily.GenericSansSerif, 24),
-                    Size = new Size(50, 50),
-                    Location = new Point(30 + i * 55, 30),
+                    Font = new Font(FontFamily.GenericSansSerif, 32),
+                    Size = new Size(70, 70),
+                    Location = new Point(margin + i * starSpacing, margin), // 左右・上に余白
                     Tag = i + 1
                 };
                 btn.Click += StarButton_Click;
@@ -38,12 +38,35 @@ namespace OOProjectBasedLeaning
                 Controls.Add(btn);
             }
 
-            var commentLabel = new Label { Text = "コメント:", Location = new Point(30, 100) };
-            var commentBox = new TextBox { Multiline = true, Size = new Size(250, 60), Location = new Point(30, 130) };
+            // コメントラベル
+            var commentLabel = new Label
+            {
+                Text = "コメント:",
+                Font = new Font("MS UI Gothic", 14),
+                Location = new Point(margin, margin + 100) // 星から適度に余白
+            };
+
+            // コメント入力欄
+            var commentBox = new TextBox
+            {
+                Multiline = true,
+                Size = new Size(480, 120),
+                Location = new Point(margin, margin + 130),
+                Font = new Font("MS UI Gothic", 12)
+            };
+
             Controls.Add(commentLabel);
             Controls.Add(commentBox);
 
-            var submitButton = new Button { Text = "登録", Location = new Point(200, 200) };
+            // 登録ボタン
+            var submitButton = new Button
+            {
+                Text = "登録",
+                Font = new Font("MS UI Gothic", 16, FontStyle.Bold),
+                Size = new Size(200, 60),
+                Location = new Point((Width - 200) / 2 - 10, Height - 120) // 画面中央・下に配置
+            };
+
             submitButton.Click += (s, e) =>
             {
                 Comment = commentBox.Text;
@@ -55,6 +78,7 @@ namespace OOProjectBasedLeaning
                 DialogResult = DialogResult.OK;
                 Close();
             };
+
             Controls.Add(submitButton);
         }
 
