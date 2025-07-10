@@ -8,11 +8,8 @@ public class Room
 
     private readonly List<Guest> guests = new(); // 滞在中のゲスト
 
-    // 予約情報
-    public bool IsReserved { get; private set; } = false;
-    public Guest? ReservedBy { get; private set; }
-    public DateTime? ReservedCheckIn { get; private set; }
-    public DateTime? ReservedCheckOut { get; private set; }
+    private Guest? reservedBy; // 予約者
+    private DateTimeRange? reservationPeriod; // 予約期間
 
     public Room(int number, int price)
     {
@@ -60,43 +57,50 @@ public class Room
         return this;
     }
 
-    // 滞在中のゲストに会員がいるか
+    // 滞在中に会員がいるか
     public bool HasMember() => guests.Any(g => g.IsMember());
-
-    // 滞在中のゲストにVIPがいるか
+    // 滞在中にVIPがいるか
     public bool HasVIP() => guests.Any(g => g.IsVIP());
-
-    // ゲストが1人もいない
+    // 滞在者なし
     public bool IsEmpty() => !guests.Any();
-
     // 空室かつ予約なし
-    public bool IsAvailable() => IsEmpty() && !IsReserved;
+    public bool IsAvailable() => IsEmpty() && !IsReserved();
 
-    // 予約処理（リーダー＋連れ）
+    // 予約中かどうか
+    public bool IsReserved() => reservedBy != null && reservationPeriod != null;
+    // 予約開始日時
+    public DateTime ReservedCheckIn() => this.reservationPeriod?.Start
+        ?? throw new InvalidOperationException("予約日が未設定です");
+    // 予約終了日時
+    public DateTime ReservedCheckOut() => this.reservationPeriod?.End
+        ?? throw new InvalidOperationException("退室日が未設定です");
+
+    // 予約者取得
+    public Guest ReservedBy => reservedBy ?? throw new InvalidOperationException("予約者が存在しません。");
+    // 予約期間取得
+    public DateTimeRange ReservedPeriod => reservationPeriod ?? throw new InvalidOperationException("予約期間が存在しません。");
+
+    // 予約処理
     public virtual void Reserve(Guest leader, IEnumerable<Guest> companions, DateTime checkIn, DateTime checkOut)
     {
-        if (IsReserved)
+        if (IsReserved())
             throw new InvalidOperationException($"{Number}号室は既に予約済みです。");
 
         if (!IsEmpty())
             throw new InvalidOperationException($"{Number}号室は使用中です。");
 
-        IsReserved = true;
-        ReservedBy = leader;
-        ReservedCheckIn = checkIn;
-        ReservedCheckOut = checkOut;
+        reservedBy = leader;
+        reservationPeriod = new DateTimeRange(checkIn, checkOut);
     }
 
     // 予約解除
     public virtual void CancelReservation()
     {
-        if (!IsReserved)
+        if (!IsReserved())
             throw new InvalidOperationException($"{Number}号室は予約されていません。");
 
-        IsReserved = false;
-        ReservedBy = null;
-        ReservedCheckIn = null;
-        ReservedCheckOut = null;
+        reservedBy = null;
+        reservationPeriod = null;
     }
 
     public override string ToString()
@@ -105,24 +109,23 @@ public class Room
     }
 }
 
-// 通常部屋：非会員は+10%
+// 通常部屋（会員でない場合は+10%）
 public class RegularRoom : Room
 {
     public RegularRoom(int n, int p) : base(n, p) { }
     public override int Price => HasMember() ? base.Price : base.Price + base.Price / 10;
 }
 
-// スイートルーム：会員またはVIP同行が必須、料金も10%増
+// スイートルーム（会員/VIPの同行が必要）
 public class SuiteRoom : Room
 {
     public SuiteRoom(int number, int price) : base(number, price) { }
 
     public override int Price => HasVIP() ? base.Price : base.Price + base.Price / 10;
 
-    // スイート予約は連れの中に1人でも会員/VIPが必要
     public override void Reserve(Guest leader, IEnumerable<Guest> companions, DateTime checkIn, DateTime checkOut)
     {
-        if (IsReserved)
+        if (IsReserved())
             throw new InvalidOperationException($"{Number}号室は既に予約済みです。");
 
         if (!IsEmpty())
@@ -131,7 +134,7 @@ public class SuiteRoom : Room
         bool hasPrivilege = leader.IsMember() || leader.IsVIP() || companions.Any(g => g.IsMember() || g.IsVIP());
 
         if (!hasPrivilege)
-            throw new InvalidOperationException($"スイートルームは、連れの中に 1 人以上の会員またはVIPが必要です。");
+            throw new InvalidOperationException("スイートルームは、連れの中に 1 人以上の会員またはVIPが必要です。");
 
         base.Reserve(leader, companions, checkIn, checkOut);
     }
@@ -155,4 +158,20 @@ public class NullRoom : Room, NullObject
     public static NullRoom Instance => instance;
     public override Room AddGuest(Guest guest) => this;
     public override Room AddGuests(List<Guest> guests) => this;
+}
+
+// 日付範囲クラス
+public class DateTimeRange
+{
+    public DateTime Start { get; }
+    public DateTime End { get; }
+
+    public DateTimeRange(DateTime start, DateTime end)
+    {
+        if (start > end)
+            throw new ArgumentException("開始日は終了日より後にできません。");
+
+        Start = start;
+        End = end;
+    }
 }

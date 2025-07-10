@@ -32,7 +32,7 @@ namespace OOProjectBasedLeaning
         // チェックイン済み判定
         public bool IsOccupied(Room room) => guestBook.Contains(room);
 
-        // 空室判定
+        // 空室判定（Room内部の状態を確認）
         public bool IsVacant(Room room) => room.IsAvailable();
 
         // 各種イベント定義
@@ -77,7 +77,7 @@ namespace OOProjectBasedLeaning
                 if (guestBook.Contains(room))
                     throw new InvalidOperationException($"{room.Number}号室は使用中です。");
 
-                if (room.ReservedBy != leader)
+                if (!room.IsReserved() || room.ReservedBy != leader)
                     throw new InvalidOperationException($"{leader.Name} さんは {room.Number}号室を予約していません。");
 
                 room.CancelReservation();

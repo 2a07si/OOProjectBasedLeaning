@@ -21,7 +21,7 @@ namespace OOProjectBasedLeaning
         // 一度いいねしたレビューを保存するセット（重複防止）
         private readonly HashSet<Review> likedReviews = new();
 
-        //低評価機能
+        // 低評価機能
         private readonly HashSet<Review> badReviews = new();
 
 
@@ -193,11 +193,11 @@ namespace OOProjectBasedLeaning
 
                     Button likeButton = null!;
                     Button BadButton = null!;
-                    
+
                     likeButton = new Button
                     {
                         Text = review.Likes >= 99 ? "👍 99+" : $"👍 {review.Likes}",
-                        Location = new Point(reviewPanel.Width - 75,10 ),
+                        Location = new Point(reviewPanel.Width - 75, 10),
                         Size = new Size(60, 30),
                         Tag = review
                     };
@@ -233,7 +233,7 @@ namespace OOProjectBasedLeaning
                         }
                     };
 
-                   　BadButton = new Button
+                    BadButton = new Button
                     {
                         Text = review.Bads >= 99 ? "👎 99+" : $"👎 {review.Bads}",
                         Location = new Point(reviewPanel.Width - 75, 40),
@@ -268,7 +268,6 @@ namespace OOProjectBasedLeaning
 
                             likeButton.Text = r.Likes >= 99 ? "👍 99+" : $"👍 {r.Likes}";
                             BadButton.Text = r.Bads >= 99 ? "👎 99+" : $"👎 {r.Bads}";
-
 
                         }
                     };

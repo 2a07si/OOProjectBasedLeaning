@@ -51,7 +51,7 @@ namespace OOProjectBasedLeaning
             {
                 return;
             }
-           
+
             // d•¡ƒhƒ‰ƒbƒO–hŽ~
             if (guestPanelArea.Controls.Contains(guestPanel))
             {
@@ -75,13 +75,11 @@ namespace OOProjectBasedLeaning
 
                 // ƒŒƒrƒ…[“ü—Í
                 homeForm.CreateReview(guest);
-
             }
 
             // —\–ñ‰Â”\^—\–ñÏƒŠƒXƒg‚ð Hotel ‚©‚çŽæ“¾
             var availableRooms = hotel.AllRooms.Where(r => hotel.IsVacant(r)).ToList();
-
-            var reservedRooms = hotel.AllRooms.Where(r => r.IsReserved).ToList();
+            var reservedRooms = hotel.AllRooms.Where(r => r.IsReserved()).ToList();
 
             using var selectForm = new RoomSelectForm(availableRooms, reservedRooms, guestPanel.GetGuest());
             if (selectForm.ShowDialog() == DialogResult.OK)
@@ -138,11 +136,11 @@ namespace OOProjectBasedLeaning
                 reservationCompletedTime = DateTime.Now;
             return reservationCompletedTime.Value.ToString("yyyy”NMMŒŽdd“ú HH:mm:ss");
         }
+
         public void AddDragDropForm(Control container, Point location)
         {
             container.Controls.Add(this);
             this.Location = location;
         }
-
     }
 }
