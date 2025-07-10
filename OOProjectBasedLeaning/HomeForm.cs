@@ -1,4 +1,6 @@
-﻿namespace OOProjectBasedLeaning
+﻿using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+
+namespace OOProjectBasedLeaning
 {
     // レビュー内容といいね数を管理するクラス
     public class Review
@@ -189,7 +191,10 @@
                     };
                     reviewPanel.Controls.Add(reviewLabel);
 
-                    var likeButton = new Button
+                    Button likeButton = null!;
+                    Button BadButton = null!;
+                    
+                    likeButton = new Button
                     {
                         Text = review.Likes >= 99 ? "👍 99+" : $"👍 {review.Likes}",
                         Location = new Point(reviewPanel.Width - 75,10 ),
@@ -201,6 +206,11 @@
                         var btn = s as Button;
                         if (btn?.Tag is Review r)
                         {
+                            if (badReviews.Remove(r))
+                            {
+                                r.Bads--;
+                            }
+
                             if (likedReviews.Contains(r))
                             {
                                 MessageBox.Show("このレビューには既にいいねしています。", "いいね済み", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -216,10 +226,14 @@
                                 reviewLabel.Font = new Font("MS UI Gothic", 11, FontStyle.Bold);
                                 reviewLabel.ForeColor = Color.DarkOrange;
                             }
+
+                            likeButton.Text = r.Likes >= 99 ? "👍 99+" : $"👍 {r.Likes}";
+                            BadButton.Text = r.Bads >= 99 ? "👎 99+" : $"👎 {r.Bads}";
+
                         }
                     };
 
-                    var BadButton = new Button
+                   　BadButton = new Button
                     {
                         Text = review.Bads >= 99 ? "👎 99+" : $"👎 {review.Bads}",
                         Location = new Point(reviewPanel.Width - 75, 40),
@@ -231,6 +245,11 @@
                         var btn = s as Button;
                         if (btn?.Tag is Review r)
                         {
+                            if (likedReviews.Remove(r))
+                            {
+                                r.Likes--;
+                            }
+
                             if (badReviews.Contains(r))
                             {
                                 MessageBox.Show("このレビューには既に低評価をしています。", "低評価済み", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -246,6 +265,11 @@
                                 reviewLabel.Font = new Font("MS UI Gothic", 11, FontStyle.Bold);
                                 reviewLabel.ForeColor = Color.DarkOrange;
                             }
+
+                            likeButton.Text = r.Likes >= 99 ? "👍 99+" : $"👍 {r.Likes}";
+                            BadButton.Text = r.Bads >= 99 ? "👎 99+" : $"👎 {r.Bads}";
+
+
                         }
                     };
 
