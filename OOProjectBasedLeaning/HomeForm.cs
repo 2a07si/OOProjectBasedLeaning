@@ -5,6 +5,7 @@
     {
         public string Content { get; set; } = "";
         public int Likes { get; set; } = 0;
+        public int Bads { get; set; }
     }
 
     public partial class HomeForm : DragDropForm
@@ -17,6 +18,10 @@
 
         // 一度いいねしたレビューを保存するセット（重複防止）
         private readonly HashSet<Review> likedReviews = new();
+
+        //低評価機能
+        private readonly HashSet<Review> badReviews = new();
+
 
         public HomeForm()
         {
@@ -187,7 +192,7 @@
                     var likeButton = new Button
                     {
                         Text = review.Likes >= 99 ? "👍 99+" : $"👍 {review.Likes}",
-                        Location = new Point(reviewPanel.Width - 75, 20),
+                        Location = new Point(reviewPanel.Width - 75,10 ),
                         Size = new Size(60, 30),
                         Tag = review
                     };
@@ -213,7 +218,39 @@
                             }
                         }
                     };
+
+                    var BadButton = new Button
+                    {
+                        Text = review.Bads >= 99 ? "👎 99+" : $"👎 {review.Bads}",
+                        Location = new Point(reviewPanel.Width - 75, 40),
+                        Size = new Size(60, 30),
+                        Tag = review
+                    };
+                    BadButton.Click += (s, ev) =>
+                    {
+                        var btn = s as Button;
+                        if (btn?.Tag is Review r)
+                        {
+                            if (badReviews.Contains(r))
+                            {
+                                MessageBox.Show("このレビューには既に低評価をしています。", "低評価済み", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                return;
+                            }
+
+                            r.Bads++;
+                            btn.Text = r.Bads >= 99 ? "👎 99+" : $"👎 {r.Bads}";
+                            badReviews.Add(r);
+
+                            if (r.Bads == 5)
+                            {
+                                reviewLabel.Font = new Font("MS UI Gothic", 11, FontStyle.Bold);
+                                reviewLabel.ForeColor = Color.DarkOrange;
+                            }
+                        }
+                    };
+
                     reviewPanel.Controls.Add(likeButton);
+                    reviewPanel.Controls.Add(BadButton);
 
                     panel.Controls.Add(reviewPanel);
                 }
