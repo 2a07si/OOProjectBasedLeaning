@@ -2,12 +2,13 @@
 
 public class Room
 {
-    private readonly int number;
+    private readonly int number; // 部屋番号
     public int RoomNumber => number;
-    private readonly int price;
+    private readonly int price;  // 基本料金
 
-    private readonly List<Guest> guests = new();
+    private readonly List<Guest> guests = new(); // 滞在中のゲスト
 
+    // 予約情報
     public bool IsReserved { get; private set; } = false;
     public Guest? ReservedBy { get; private set; }
     public DateTime? ReservedCheckIn { get; private set; }
@@ -25,18 +26,21 @@ public class Room
     public override int GetHashCode() => Number;
     public override bool Equals(object obj) => obj is Room r && r.Number == Number;
 
+    // 単体ゲスト追加
     public virtual Room AddGuest(Guest guest)
     {
         guests.Add(guest.AddRoom(this));
         return this;
     }
 
+    // 複数ゲスト追加
     public virtual Room AddGuests(List<Guest> guests)
     {
         guests.ForEach(g => AddGuest(g));
         return this;
     }
 
+    // 単体ゲスト削除
     public virtual Room RemoveGuest(Guest guest)
     {
         if (guests.Remove(guest))
@@ -46,6 +50,7 @@ public class Room
         return this;
     }
 
+    // 複数ゲスト削除
     public virtual Room RemoveGuests(IEnumerable<Guest> companions)
     {
         foreach (var g in companions)
@@ -55,11 +60,19 @@ public class Room
         return this;
     }
 
+    // 滞在中のゲストに会員がいるか
     public bool HasMember() => guests.Any(g => g.IsMember());
+
+    // 滞在中のゲストにVIPがいるか
     public bool HasVIP() => guests.Any(g => g.IsVIP());
+
+    // ゲストが1人もいない
     public bool IsEmpty() => !guests.Any();
+
+    // 空室かつ予約なし
     public bool IsAvailable() => IsEmpty() && !IsReserved;
 
+    // 予約処理（リーダー＋連れ）
     public virtual void Reserve(Guest leader, IEnumerable<Guest> companions, DateTime checkIn, DateTime checkOut)
     {
         if (IsReserved)
@@ -74,6 +87,7 @@ public class Room
         ReservedCheckOut = checkOut;
     }
 
+    // 予約解除
     public virtual void CancelReservation()
     {
         if (!IsReserved)
@@ -91,18 +105,21 @@ public class Room
     }
 }
 
+// 通常部屋：非会員は+10%
 public class RegularRoom : Room
 {
     public RegularRoom(int n, int p) : base(n, p) { }
     public override int Price => HasMember() ? base.Price : base.Price + base.Price / 10;
 }
 
+// スイートルーム：会員またはVIP同行が必須、料金も10%増
 public class SuiteRoom : Room
 {
     public SuiteRoom(int number, int price) : base(number, price) { }
 
     public override int Price => HasVIP() ? base.Price : base.Price + base.Price / 10;
 
+    // スイート予約は連れの中に1人でも会員/VIPが必要
     public override void Reserve(Guest leader, IEnumerable<Guest> companions, DateTime checkIn, DateTime checkOut)
     {
         if (IsReserved)
@@ -119,7 +136,6 @@ public class SuiteRoom : Room
         base.Reserve(leader, companions, checkIn, checkOut);
     }
 
-
     public override Room AddGuests(List<Guest> guests)
     {
         bool privileged = HasVIP() || guests.Any(g => g.IsMember() || g.IsVIP());
@@ -131,6 +147,7 @@ public class SuiteRoom : Room
     }
 }
 
+// 未定義部屋
 public class NullRoom : Room, NullObject
 {
     private static readonly NullRoom instance = new NullRoom();
@@ -139,4 +156,3 @@ public class NullRoom : Room, NullObject
     public override Room AddGuest(Guest guest) => this;
     public override Room AddGuests(List<Guest> guests) => this;
 }
-

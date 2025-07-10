@@ -23,23 +23,29 @@ namespace OOProjectBasedLeaning
             guestBook = new List<Room>();
         }
 
-        private readonly List<Room> allRooms;
-        private readonly List<Room> vacantRooms;
-        private readonly List<Room> guestBook;
+        private readonly List<Room> allRooms;           // 全ての部屋
+        private readonly List<Room> vacantRooms;        // 空室リスト
+        private readonly List<Room> guestBook;          // チェックイン済み部屋リスト
 
         public IReadOnlyList<Room> AllRooms => allRooms;
 
+        // チェックイン済み判定
         public bool IsOccupied(Room room) => guestBook.Contains(room);
 
+        // 空室判定
         public bool IsVacant(Room room) => room.IsAvailable();
 
+        // 各種イベント定義
         public event Action<Reservation>? ReservationAdded;
         public event EventHandler<HotelEventArgs>? CheckedIn;
         public event EventHandler<HotelEventArgs>? CheckedOut;
         public event EventHandler<HotelErrorEventArgs>? OperationFailed;
 
+        // 部屋番号からRoomを取得
         public Room GetRoomByNumber(int number)
             => allRooms.FirstOrDefault(r => r.Number == number) ?? NullRoom.Instance;
+
+        // 予約処理
         public void Reserve(int roomNumber, Guest guest, DateTime checkIn, DateTime checkOut)
         {
             var room = GetRoomByNumber(roomNumber);
@@ -47,13 +53,12 @@ namespace OOProjectBasedLeaning
             if (!vacantRooms.Remove(room))
                 throw new InvalidOperationException($"{room.Number}号室は空室リストに存在しません。");
 
-            // 連れも渡すように修正
             room.Reserve(guest, guest.Companions, checkIn, checkOut);
 
             ReservationAdded?.Invoke(new Reservation(guest, room, checkIn, checkOut));
         }
 
-
+        // 予約キャンセル処理
         public void CancelReservation(int roomNumber)
         {
             var room = GetRoomByNumber(roomNumber);
@@ -63,6 +68,7 @@ namespace OOProjectBasedLeaning
                 vacantRooms.Add(room);
         }
 
+        // チェックイン処理
         public void CheckIn(int roomNumber, Guest leader)
         {
             var room = GetRoomByNumber(roomNumber);
@@ -90,6 +96,7 @@ namespace OOProjectBasedLeaning
             }
         }
 
+        // チェックアウト処理
         public void CheckOut(Guest leader)
         {
             var room = leader.StayAt();
@@ -111,6 +118,7 @@ namespace OOProjectBasedLeaning
         }
     }
 
+    // チェックイン・アウト通知
     public class HotelEventArgs : EventArgs
     {
         public Guest Guest { get; }
@@ -119,6 +127,7 @@ namespace OOProjectBasedLeaning
         public HotelEventArgs(Guest g, Room r) { Guest = g; Room = r; }
     }
 
+    // 操作失敗通知
     public class HotelErrorEventArgs : EventArgs
     {
         public Guest Guest { get; }
@@ -128,6 +137,7 @@ namespace OOProjectBasedLeaning
         { Guest = g; Room = r; ErrorMessage = msg; }
     }
 
+    // 予約情報モデル
     public class Reservation
     {
         public Guest Guest { get; }
